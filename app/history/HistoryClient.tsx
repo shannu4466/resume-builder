@@ -1,13 +1,11 @@
 import { Box, Typography } from "@mui/material";
 import Navbar from "@/components/Navbar";
 
-export default function TemplatesClient() {
+export default function HistoryClient() {
     return (
         <Box>
             <Navbar />
-            <Box>
-                <Typography>Templates</Typography>
-            </Box>
+            <Typography>My History</Typography>
         </Box>
     )
 }

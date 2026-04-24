@@ -13,6 +13,7 @@ import {
     TextField,
     Typography
 } from "@mui/material"
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Formik } from "formik"
 import { useState } from "react"
 import * as Yup from "yup"
@@ -327,14 +328,60 @@ export default function BuilderClient() {
     return (
         <Box>
             <Navbar />
-
+            <Typography
+                sx={{
+                    ml: 5,
+                    mb: -10,
+                    mt: 5,
+                    display: {
+                        xs: "none",
+                        sm: "none",
+                        md: "none",
+                        lg: "block",
+                        xl: "block"
+                    }
+                }}
+            >
+                <ArrowBackIcon
+                    onClick={() => router.back()}
+                    sx={{
+                        cursor: "pointer",
+                        borderRadius: "50%",
+                        p: 1,
+                        "&:hover": {
+                            backgroundColor: "gray"
+                        }
+                    }}
+                />
+            </Typography>
             <Box sx={{ maxWidth: 900, mx: "auto", px: 2, py: 5 }}>
                 <Typography variant="h4" sx={{ fontWeight: "bold", mb: 4 }}>
                     Build Your Resume
                 </Typography>
 
-                <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 5 }}>
-                    {steps.map(step => (
+                <Stepper
+                    activeStep={activeStep}
+                    alternativeLabel
+                    sx={{
+                        mb: 5,
+                        width: "100%",
+                        "& .MuiStep-root": {
+                            flex: 1,
+                            minWidth: 0
+                        },
+                        "& .MuiStepLabel-label": {
+                            fontSize: { xs: "10px", sm: "14px" },
+                            whiteSpace: "normal",
+                            textAlign: "center",
+                            wordBreak: "break-word",
+                            lineHeight: 1.2
+                        },
+                        "& .MuiStepIcon-root": {
+                            fontSize: { xs: "1.3rem", sm: "1.5rem" }
+                        }
+                    }}
+                >
+                    {steps.map((step) => (
                         <Step key={step}>
                             <StepLabel>{step}</StepLabel>
                         </Step>

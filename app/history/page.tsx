@@ -1,14 +1,14 @@
-import TemplatesClient from './TemplatesClient'
+import HistoryClient from './HistoryClient'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-    title: "Prime CV-Templates"
+    title: "Prime CV-History"
 }
 
-export default function Login() {
+export default function History() {
     return (
         <div suppressHydrationWarning>
-            <TemplatesClient />
+            <HistoryClient />
         </div>
     )
 }
