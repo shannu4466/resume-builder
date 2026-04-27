@@ -11,15 +11,27 @@ import {
     StepLabel,
     Stepper,
     TextField,
-    Typography
+    Typography,
+    FormControlLabel,
+    Radio,
+    Paper,
 } from "@mui/material"
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Formik } from "formik"
+import DownloadIcon from "@mui/icons-material/Download";
+import { Formik, FormikProps } from "formik"
 import { useState } from "react"
 import * as Yup from "yup"
 import Navbar from "../../components/Navbar"
 
 import { useRouter } from 'next/navigation'
+
+import TemplateOne from "../templates/TemplateOne";
+import TemplateTwo from "../templates/TemplateTwo";
+
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+
+import { ResumeValues } from "../templates/TemplateOne";
 
 const steps = [
     "Personal Details",
@@ -51,36 +63,36 @@ const skillOptions = [
     "Tailwind CSS"
 ]
 
-const initialValues = {
-    name: "",
-    email: "",
-    phone: "",
-    linkedin: "",
+const initialValues: ResumeValues = {
+    name: "Shanmukha Rao Thangudu",
+    email: "shannuthangudu@gmail.com",
+    phone: "+91 9876543210",
+    linkedin: "https://www.linkedin.com/in/shanmukharaothangdu",
 
-    tenthSchool: "",
-    tenthPercentage: "",
+    tenthSchool: "Abhydaya high scool",
+    tenthPercentage: "92%",
 
-    interCollege: "",
-    interPercentage: "",
+    interCollege: "Narayana Junior College",
+    interPercentage: "89%",
 
-    degreeCollege: "",
-    degreePercentage: "",
+    degreeCollege: "Sri vasavi engg college",
+    degreePercentage: "8.4 CGPA",
 
-    project1Name: "",
-    project1Desc: "",
-    project1Tech: "",
+    project1Name: "Student Management System",
+    project1Desc: "A web application to manage student records, attendance, and marks efficiently.",
+    project1Tech: "React, Node.js, Express, MongoDB",
 
-    project2Name: "",
-    project2Desc: "",
-    project2Tech: "",
+    project2Name: "Weather Forecast App",
+    project2Desc: "An app that shows live weather updates and forecasts using external APIs.",
+    project2Tech: "React, JavaScript, OpenWeather API, CSS",
 
-    skills: "",
+    skills: "JavaScript, React.js, Node.js, MongoDB, HTML, CSS, Git",
 
-    certificateName: "",
-    certificateDesc: "",
+    certificateName: "Full Stack Web Development Certification",
+    certificateDesc: "Completed training in MERN Stack development including frontend and backend projects.",
 
-    achievement: ""
-}
+    achievement: "Secured first prize in college coding competition."
+};
 
 const validationSchemas = [
     Yup.object({
@@ -123,7 +135,9 @@ const validationSchemas = [
 ]
 
 export default function BuilderClient() {
-    const [activeStep, setActiveStep] = useState<number>(0)
+    const [activeStep, setActiveStep] = useState<number>(5)
+    const [seeTemplates, setSeeTemplates] = useState<boolean>(false)
+    const [selectedTemplate, setSelectedTemplate] = useState<string>("template1")
 
     const isLastStep = activeStep === steps.length - 1
 
@@ -132,10 +146,10 @@ export default function BuilderClient() {
 
     const router = useRouter()
 
-    const renderFields = (formik: any) => {
+    const renderFields = (formik: FormikProps<ResumeValues>) => {
         const { values, handleChange, handleBlur, touched, errors, setFieldValue } = formik
 
-        const fieldProps = (name: string, label: string) => ({
+        const fieldProps = (name: keyof ResumeValues, label: string) => ({
             fullWidth: true,
             name,
             label,
@@ -307,18 +321,51 @@ export default function BuilderClient() {
         }
     }
 
-    const handleSaveUserResumedata = (values: any) => {
+    const downloadPDF = async (id: string, fileName: string) => {
+        const element = document.getElementById(id);
+
+        if (!element) {
+            alert("Element not found");
+            return;
+        }
+
+        const canvas = await html2canvas(element, {
+            scale: 3,
+            useCORS: true
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+        const pdfWidth = 210;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        const pdf = new jsPDF("p", "mm", [pdfHeight, pdfWidth]);
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`${fileName}.pdf`);
+    };
+
+    const handleDownload = () => {
+        if (selectedTemplate === "template1") {
+            downloadPDF("template1", "Prime_CV_Template_1");
+        } else {
+            downloadPDF("template2", "Prime_CV_Template_2");
+        }
+    };
+
+    const handleDownloadAndSave = (values: ResumeValues) => {
         const userId = 1
         if (!userId) {
-            alert("User not found")
+            alert("User not found. Kindly Logout and Login again")
             return
         }
         const storageKey = `prime_cv_resumes_${userId}`
         const existingResumes =
             JSON.parse(localStorage.getItem(storageKey) || "[]")
+        // eslint-disable-next-line react-hooks/purity
+        const timestamp = Date.now()
+        const dateString = new Date(timestamp).toISOString()
         const newResume = {
-            resumeId: Date.now(), // unique id
-            createdAt: new Date().toISOString(),
+            templatNumber: selectedTemplate,
+            resumeId: timestamp,
+            createdAt: dateString,
             ...values
         }
         const updatedResumes = [...existingResumes, newResume]
@@ -355,48 +402,50 @@ export default function BuilderClient() {
                 />
             </Typography>
             <Box sx={{ maxWidth: 900, mx: "auto", px: 2, py: 5 }}>
-                <Typography variant="h4" sx={{ fontWeight: "bold", mb: 4 }}>
-                    Build Your Resume
+                <Typography variant="h6" sx={{ fontWeight: "bold", mb: 4 }}>
+                    {seeTemplates ? "Select Template To Download (Download now to view its full content)" : "Build Your Resume"}
                 </Typography>
 
-                <Stepper
-                    activeStep={activeStep}
-                    alternativeLabel
-                    sx={{
-                        mb: 5,
-                        width: "100%",
-                        "& .MuiStep-root": {
-                            flex: 1,
-                            minWidth: 0
-                        },
-                        "& .MuiStepLabel-label": {
-                            fontSize: { xs: "10px", sm: "14px" },
-                            whiteSpace: "normal",
-                            textAlign: "center",
-                            wordBreak: "break-word",
-                            lineHeight: 1.2
-                        },
-                        "& .MuiStepIcon-root": {
-                            fontSize: { xs: "1.3rem", sm: "1.5rem" }
-                        }
-                    }}
-                >
-                    {steps.map((step) => (
-                        <Step key={step}>
-                            <StepLabel>{step}</StepLabel>
-                        </Step>
-                    ))}
-                </Stepper>
+                {!seeTemplates && (
+                    <Stepper
+                        activeStep={activeStep}
+                        alternativeLabel
+                        sx={{
+                            mb: 5,
+                            width: "100%",
+                            "& .MuiStep-root": {
+                                flex: 1,
+                                minWidth: 0
+                            },
+                            "& .MuiStepLabel-label": {
+                                fontSize: { xs: "10px", sm: "14px" },
+                                whiteSpace: "normal",
+                                textAlign: "center",
+                                wordBreak: "break-word",
+                                lineHeight: 1.2
+                            },
+                            "& .MuiStepIcon-root": {
+                                fontSize: { xs: "1.3rem", sm: "1.5rem" }
+                            }
+                        }}
+                    >
+                        {steps.map((step) => (
+                            <Step key={step}>
+                                <StepLabel>{step}</StepLabel>
+                            </Step>
+                        ))}
+                    </Stepper>
+                )}
 
                 <Formik
                     initialValues={initialValues}
                     validationSchema={validationSchemas[activeStep]}
                     onSubmit={(values, { setTouched, resetForm }) => {
                         if (isLastStep) {
-                            handleSaveUserResumedata(values)
+                            setSeeTemplates(true)
+                            nextStep()
                             resetForm()
                             setTouched({})
-                            router.push("/")
                         } else {
                             setTouched({})
                             nextStep()
@@ -404,42 +453,142 @@ export default function BuilderClient() {
                     }}
                 >
                     {(formik) => (
-                        <form onSubmit={formik.handleSubmit}>
-                            <Card
-                                elevation={0}
-                                sx={{
-                                    border: "1px solid #e5e7eb",
-                                    borderRadius: 4
-                                }}
-                            >
-                                <CardContent sx={{ p: 4 }}>
-                                    {renderFields(formik)}
+                        <>
+                            {seeTemplates && (
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        mt: 2,
+                                        mb: 2,
+                                        flexDirection: {
+                                            xs: "column",
+                                            sm: "column",
+                                            md: "column",
+                                            lg: "row"
+                                        },
+                                        overflowX: "hidden",
+                                        ml: {
+                                            xs: 0,
+                                            lg: -20
+                                        }
+                                    }}
+                                >
+                                    {/* Template One */}
+                                    <Box sx={{
+                                        textAlign: "center", overflowX: "auto", mr: 5,
+                                        mb: {
+                                            xs: 3,
+                                            lg: 0,
+                                        },
+                                        ml: {
+                                            xs: 10,
+                                            lg: 0
+                                        }
+                                    }}>
+                                        <FormControlLabel
+                                            control={
+                                                <Radio
+                                                    checked={selectedTemplate === "template1"}
+                                                    onChange={() => setSelectedTemplate("template1")}
+                                                />
+                                            }
+                                            label="Template One"
+                                        />
 
-                                    <Box
+                                        <Box id="template1">
+                                            <TemplateOne values={formik.values} height={800} width="100%" />
+                                        </Box>
+                                    </Box>
+
+                                    {/* Template Two */}
+                                    <Box sx={{
+                                        textAlign: "center",
+                                        ml: {
+                                            xs: 0,
+                                            md: 5,
+                                            lg: 5,
+                                        }
+                                    }}>
+                                        <FormControlLabel
+                                            control={
+                                                <Radio
+                                                    checked={selectedTemplate === "template2"}
+                                                    onChange={() => setSelectedTemplate("template2")}
+                                                />
+                                            }
+                                            label="Template Two"
+                                        />
+
+                                        <Box id="template2">
+                                            <TemplateTwo values={formik.values} height={800} width="100%" />
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            )}
+                            {seeTemplates && (
+                                <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", mt: 4 }}>
+                                    <Button variant="outlined" onClick={() => {
+                                        setActiveStep(5)
+                                        setSeeTemplates(false)
+                                    }}>
+                                        EDIT
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<DownloadIcon />}
+                                        onClick={() => {
+                                            handleDownload();
+                                            handleDownloadAndSave(formik.values)
+                                            router.push("/")
+                                        }}
+                                        sx={{ borderRadius: "10px", }}
+                                    >
+                                        Download Resume
+                                    </Button>
+                                </Box>
+                            )}
+                            {!seeTemplates && (
+                                <form onSubmit={formik.handleSubmit}>
+                                    <Card
+                                        elevation={0}
                                         sx={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            mt: 4
+                                            border: "1px solid #e5e7eb",
+                                            borderRadius: 4
                                         }}
                                     >
-                                        <Button
-                                            variant="outlined"
-                                            disabled={activeStep === 0}
-                                            onClick={prevStep}
-                                        >
-                                            Back
-                                        </Button>
+                                        <CardContent sx={{ p: 4 }}>
+                                            {renderFields(formik)}
 
-                                        <Button variant="contained" type="submit">
-                                            {isLastStep ? "Submit" : "Next"}
-                                        </Button>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </form>
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    justifyContent: "space-between",
+                                                    mt: 4
+                                                }}
+                                            >
+                                                <Button
+                                                    variant="outlined"
+                                                    disabled={activeStep === 0}
+                                                    onClick={prevStep}
+                                                >
+                                                    Back
+                                                </Button>
+
+                                                <Button variant="contained" type="submit">
+                                                    {isLastStep ? "Submit" : "Next"}
+                                                </Button>
+
+                                            </Box>
+                                        </CardContent>
+                                    </Card>
+                                </form>
+                            )}
+                        </>
                     )}
                 </Formik>
             </Box>
-        </Box>
+        </Box >
     )
 }

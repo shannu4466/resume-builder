@@ -1,7 +1,7 @@
 "use client"
 import { Box, Divider, Grid, Paper, Stack, Typography } from "@mui/material"
 
-type ResumeValues = {
+export type ResumeValues = {
     name: string
     email: string
     phone: string
@@ -26,6 +26,8 @@ type ResumeValues = {
 
 type Props = {
     values: ResumeValues
+    height?: number | string
+    width?: number | string
 }
 
 const ACCENT = "#c0392b"
@@ -34,7 +36,9 @@ const SIDEBAR_BG = "#1c1c2e"
 const SIDEBAR_TEXT = "rgba(255,255,255,0.82)"
 const SIDEBAR_MUTED = "rgba(255,255,255,0.5)"
 
-export default function TemplateOne({ values }: Props) {
+export default function TemplateOne({ values, height, width }: Props) {
+    const scale = width ? (typeof width === 'number' ? width / 900 : 1) : 1;
+
     const skillList = values.skills
         ? values.skills.split(",").map(item => item.trim()).filter(Boolean)
         : []
@@ -47,8 +51,9 @@ export default function TemplateOne({ values }: Props) {
         <Paper
             elevation={6}
             sx={{
-                width: "100%",
-                maxWidth: 900,
+                width: width || "100%",
+                maxWidth: width || 900,
+                height: height || "auto",
                 mx: "auto",
                 borderRadius: 2,
                 overflow: "hidden",
@@ -56,11 +61,11 @@ export default function TemplateOne({ values }: Props) {
                 fontFamily: "'Georgia', serif",
             }}
         >
-            <Grid container sx={{ minHeight: 600, minWidth: 550 }}>
+            <Grid container sx={{ minHeight: height || 600, minWidth: width ? 0 : 550, flexWrap: "nowrap" }}>
 
                 {/* LEFT SIDEBAR */}
                 <Grid
-                    size={{ xs: 12, md: 3.5 }}
+                    size={{ xs: 3.5 }}
                     sx={{
                         bgcolor: SIDEBAR_BG,
                         display: "flex",
@@ -81,8 +86,8 @@ export default function TemplateOne({ values }: Props) {
                     >
                         <Box
                             sx={{
-                                width: 90,
-                                height: 90,
+                                width: 90 * scale,
+                                height: 90 * scale,
                                 borderRadius: "50%",
                                 border: "3px solid rgba(255,255,255,0.9)",
                                 boxShadow: "0 4px 20px rgba(0,0,0,0.35)",
@@ -94,7 +99,7 @@ export default function TemplateOne({ values }: Props) {
                         >
                             <Typography
                                 sx={{
-                                    fontSize: 28,
+                                    fontSize: 28 * scale,
                                     fontWeight: 700,
                                     color: "#fff",
                                     letterSpacing: 2,
@@ -108,17 +113,17 @@ export default function TemplateOne({ values }: Props) {
 
                     {/* Contact */}
                     <Box sx={{ px: 2.5, pt: 2.5, pb: 1 }}>
-                        <SidebarSection title="CONTACT" accent={ACCENT} />
-                        <SidebarRow label="Email" value={values.email} muted={SIDEBAR_MUTED} text={SIDEBAR_TEXT} />
-                        <SidebarRow label="Phone" value={`+91 ${values.phone}`} muted={SIDEBAR_MUTED} text={SIDEBAR_TEXT} />
-                        <SidebarRow label="LinkedIn" value={values.linkedin} muted={SIDEBAR_MUTED} text={SIDEBAR_TEXT} />
+                        <SidebarSection title="CONTACT" accent={ACCENT} scale={scale} />
+                        <SidebarRow label="Email" value={values.email} muted={SIDEBAR_MUTED} text={SIDEBAR_TEXT} scale={scale} />
+                        <SidebarRow label="Phone" value={`+91 ${values.phone}`} muted={SIDEBAR_MUTED} text={SIDEBAR_TEXT} scale={scale} />
+                        <SidebarRow label="LinkedIn" value={values.linkedin} muted={SIDEBAR_MUTED} text={SIDEBAR_TEXT} scale={scale} />
                     </Box>
 
                     <Divider sx={{ mx: 2.5, my: 1.8, borderColor: "rgba(255,255,255,0.1)" }} />
 
                     {/* Skills */}
                     <Box sx={{ px: 2.5, pb: 1 }}>
-                        <SidebarSection title="SKILLS" accent={ACCENT} />
+                        <SidebarSection title="SKILLS" accent={ACCENT} scale={scale} />
                         <Stack spacing={0.5} sx={{ mt: 1 }}>
                             {skillList.map((skill, i) => (
                                 <Stack key={i} direction="row" sx={{ alignItems: "flex-start" }} spacing={0.8}>
@@ -132,7 +137,7 @@ export default function TemplateOne({ values }: Props) {
                                             flexShrink: 0,
                                         }}
                                     />
-                                    <Typography sx={{ fontSize: 11.5, color: SIDEBAR_TEXT, lineHeight: 1.85 }}>
+                                    <Typography sx={{ fontSize: 11.5 * scale, color: SIDEBAR_TEXT, lineHeight: 1.85 }}>
                                         {skill}
                                     </Typography>
                                 </Stack>
@@ -144,11 +149,11 @@ export default function TemplateOne({ values }: Props) {
 
                     {/* Certificate */}
                     <Box sx={{ px: 2.5, pb: 2 }}>
-                        <SidebarSection title="CERTIFICATE" accent={ACCENT} />
+                        <SidebarSection title="CERTIFICATE" accent={ACCENT} scale={scale} />
                         <Typography
                             sx={{
                                 mt: 1,
-                                fontSize: 12.5,
+                                fontSize: 12.5 * scale,
                                 fontWeight: 700,
                                 color: "#fff",
                                 lineHeight: 1.7,
@@ -159,7 +164,7 @@ export default function TemplateOne({ values }: Props) {
                         <Typography
                             sx={{
                                 mt: 0.5,
-                                fontSize: 11.5,
+                                fontSize: 11.5 * scale,
                                 color: SIDEBAR_MUTED,
                                 lineHeight: 1.8,
                             }}
@@ -171,7 +176,7 @@ export default function TemplateOne({ values }: Props) {
 
                 {/* RIGHT MAIN */}
                 <Grid
-                    size={{ xs: 12, md: 8.5 }}
+                    size={{ xs: 8.5 }}
                     sx={{
                         display: "flex",
                         flexDirection: "column",
@@ -189,7 +194,7 @@ export default function TemplateOne({ values }: Props) {
                     >
                         <Typography
                             sx={{
-                                fontSize: "2.1rem",
+                                fontSize: `${2.1 * scale}rem`,
                                 fontWeight: 700,
                                 color: "#fff",
                                 fontFamily: "'Georgia', serif",
@@ -203,7 +208,7 @@ export default function TemplateOne({ values }: Props) {
                         <Typography
                             sx={{
                                 mt: 0.6,
-                                fontSize: 12,
+                                fontSize: 12 * scale,
                                 color: ACCENT,
                                 letterSpacing: 1.5,
                                 textTransform: "uppercase",
@@ -218,13 +223,14 @@ export default function TemplateOne({ values }: Props) {
                     <Box sx={{ px: 3.5, py: 2.8, flex: 1 }}>
 
                         {/* Projects */}
-                        <MainSection title="PROJECTS" accent={ACCENT} />
+                        <MainSection title="PROJECTS" accent={ACCENT} scale={1} />
 
                         <ProjectCard
                             name={values.project1Name}
                             desc={values.project1Desc}
                             tech={values.project1Tech}
                             accent={ACCENT}
+                            scale={1}
                         />
 
                         <ProjectCard
@@ -232,12 +238,14 @@ export default function TemplateOne({ values }: Props) {
                             desc={values.project2Desc}
                             tech={values.project2Tech}
                             accent={ACCENT}
+                            scale={1}
                         />
 
                         <Divider sx={{ my: 2, borderColor: "#e2e8f0" }} />
 
                         {/* Education */}
-                        <MainSection title="EDUCATION" accent={ACCENT} />
+                        <MainSection title="EDUCATION" accent={ACCENT} scale={0} />
+                        <MainSection title="EDUCATION" accent={ACCENT} scale={scale} />
 
                         <EduRow
                             degree="B.Tech – CSE"
@@ -245,6 +253,7 @@ export default function TemplateOne({ values }: Props) {
                             year="2022 – 2026"
                             score={`${values.degreePercentage}%`}
                             accent={ACCENT}
+                            scale={scale}
                         />
                         <EduRow
                             degree="Intermediate"
@@ -252,6 +261,7 @@ export default function TemplateOne({ values }: Props) {
                             year="2020 – 2022"
                             score={`${values.interPercentage}%`}
                             accent={ACCENT}
+                            scale={scale}
                         />
                         <EduRow
                             degree="Secondary Education"
@@ -259,12 +269,13 @@ export default function TemplateOne({ values }: Props) {
                             year="2019 – 2020"
                             score={`${values.tenthPercentage}%`}
                             accent={ACCENT}
+                            scale={scale}
                         />
 
                         <Divider sx={{ my: 2, borderColor: "#e2e8f0" }} />
 
                         {/* Achievement */}
-                        <MainSection title="ACHIEVEMENT" accent={ACCENT} />
+                        <MainSection title="ACHIEVEMENT" accent={ACCENT} scale={scale} />
 
                         <Stack direction="row" sx={{ alignItems: "flex-start" }} spacing={1}>
                             <Box
@@ -279,7 +290,7 @@ export default function TemplateOne({ values }: Props) {
                             />
                             <Typography
                                 sx={{
-                                    fontSize: 12.5,
+                                    fontSize: 12.5 * scale,
                                     color: "#475569",
                                     lineHeight: 1.85,
                                 }}
@@ -294,11 +305,11 @@ export default function TemplateOne({ values }: Props) {
     )
 }
 
-function SidebarSection({ title, accent }: { title: string; accent: string }) {
+function SidebarSection({ title, accent, scale }: { title: string; accent: string; scale: number }) {
     return (
         <Typography
             sx={{
-                fontSize: 12,
+                fontSize: 12 * scale,
                 fontWeight: 700,
                 color: accent,
                 letterSpacing: 1,
@@ -318,29 +329,31 @@ function SidebarRow({
     value,
     muted,
     text,
+    scale,
 }: {
     label: string
     value: string
     muted: string
     text: string
+    scale: number
 }) {
     return (
         <Box sx={{ mb: 1 }}>
-            <Typography sx={{ fontSize: 10, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
+            <Typography sx={{ fontSize: 10 * scale, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
                 {label}
             </Typography>
-            <Typography sx={{ fontSize: 11.5, color: text, lineHeight: 1.7, wordBreak: "break-all" }}>
+            <Typography sx={{ fontSize: 11.5 * scale, color: text, lineHeight: 1.7, wordBreak: "break-all" }}>
                 {value}
             </Typography>
         </Box>
     )
 }
 
-function MainSection({ title, accent }: { title: string; accent: string }) {
+function MainSection({ title, accent, scale }: { title: string; accent: string; scale: number }) {
     return (
         <Typography
             sx={{
-                fontSize: 13,
+                fontSize: 13 * scale,
                 fontWeight: 700,
                 color: accent,
                 letterSpacing: 1.5,
@@ -360,11 +373,13 @@ function ProjectCard({
     desc,
     tech,
     accent,
+    scale,
 }: {
     name: string
     desc: string
     tech: string
     accent: string
+    scale: number
 }) {
     return (
         <Box
@@ -376,7 +391,7 @@ function ProjectCard({
         >
             <Typography
                 sx={{
-                    fontSize: 13.5,
+                    fontSize: 13.5 * scale,
                     fontWeight: 700,
                     color: "#1a1a1a",
                     lineHeight: 1.5,
@@ -387,7 +402,7 @@ function ProjectCard({
             <Typography
                 sx={{
                     mt: 0.5,
-                    fontSize: 12,
+                    fontSize: 12 * scale,
                     color: "#475569",
                     lineHeight: 1.8,
                 }}
@@ -397,7 +412,7 @@ function ProjectCard({
             <Typography
                 sx={{
                     mt: 0.5,
-                    fontSize: 11.5,
+                    fontSize: 11.5 * scale,
                     fontWeight: 700,
                     color: accent,
                 }}
@@ -414,28 +429,30 @@ function EduRow({
     year,
     score,
     accent,
+    scale,
 }: {
     degree: string
     college: string
     year: string
     score: string
     accent: string
+    scale: number
 }) {
     return (
         <Stack direction="row" spacing={2} sx={{ mb: 1.6 }}>
-            <Box sx={{ minWidth: 90, flexShrink: 0 }}>
-                <Typography sx={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", lineHeight: 1.6 }}>
+            <Box sx={{ minWidth: 90 * scale, flexShrink: 0 }}>
+                <Typography sx={{ fontSize: 11 * scale, color: "#94a3b8", fontStyle: "italic", lineHeight: 1.6 }}>
                     {year}
                 </Typography>
-                <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: accent }}>
+                <Typography sx={{ fontSize: 11.5 * scale, fontWeight: 700, color: accent }}>
                     {score}
                 </Typography>
             </Box>
             <Box>
-                <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.5 }}>
+                <Typography sx={{ fontSize: 13 * scale, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.5 }}>
                     {degree}
                 </Typography>
-                <Typography sx={{ fontSize: 12, color: "#475569", lineHeight: 1.7 }}>
+                <Typography sx={{ fontSize: 12 * scale, color: "#475569", lineHeight: 1.7 }}>
                     {college}
                 </Typography>
             </Box>
