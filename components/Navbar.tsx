@@ -1,30 +1,34 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import MenuIcon from "@mui/icons-material/Menu";
 import {
     AppBar,
-    Toolbar,
-    Typography,
     Box,
     Button,
-    IconButton,
+    Container,
     Drawer,
+    IconButton,
     List,
     ListItem,
     ListItemButton,
     ListItemText,
-    Container,
+    Toolbar,
+    Typography,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import { useAuth } from "@/context/AuthContext";
-import logo from '../public/prime_cv_logo_with_background-removebg-preview.png'
-import Image from 'next/image'
+import Image from 'next/image';
+import Link from "next/link";
+import { useState } from "react";
+import logo from '../public/prime_cv_logo_with_background-removebg-preview.png';
+
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
 
     const { user, logout } = useAuth()
+
+    const pathname = usePathname()
 
     const userEmail = user?.email
     const userName = userEmail?.split("@")[0]
@@ -52,7 +56,7 @@ export default function Navbar() {
                 <Container maxWidth="xl">
                     <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
                         <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml:-4 }}>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: -4 }}>
                                 <Image src={logo} alt="logo" width={100} height={50} style={{ marginRight: -30 }} />
                                 <Typography
                                     variant="h6"
@@ -73,6 +77,7 @@ export default function Navbar() {
                                         color: "#374151",
                                         fontWeight: 500,
                                         textTransform: "none",
+                                        backgroundColor: pathname === item.path ? "#e5e7eb" : "transparent",
                                     }}
                                     onClick={() => {
                                         if (item.label === 'Logout') {
@@ -126,6 +131,7 @@ export default function Navbar() {
                                             logout()
                                         }
                                     }}
+                                    sx={{ backgroundColor: pathname === item.path ? "#e5e7eb" : "transparent", }}
                                 >
                                     <ListItemText primary={item.label} />
                                 </ListItemButton>

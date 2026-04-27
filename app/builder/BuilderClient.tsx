@@ -1,29 +1,28 @@
 "use client"
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DownloadIcon from "@mui/icons-material/Download";
 import {
     Box,
     Button,
     Card,
     CardContent,
     Chip,
+    FormControlLabel,
     Grid,
+    Radio,
     Step,
     StepLabel,
     Stepper,
     TextField,
-    Typography,
-    FormControlLabel,
-    Radio,
-    Paper,
-} from "@mui/material"
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DownloadIcon from "@mui/icons-material/Download";
-import { Formik, FormikProps } from "formik"
-import { useState } from "react"
-import * as Yup from "yup"
-import Navbar from "../../components/Navbar"
+    Typography
+} from "@mui/material";
+import { Formik, FormikProps } from "formik";
+import { useState } from "react";
+import * as Yup from "yup";
+import Navbar from "../../components/Navbar";
 
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 
 import TemplateOne from "../templates/TemplateOne";
 import TemplateTwo from "../templates/TemplateTwo";
@@ -91,7 +90,9 @@ const initialValues: ResumeValues = {
     certificateName: "",
     certificateDesc: "",
 
-    achievement: ""
+    achievement: "",
+    templatNumber: "",
+    resumeId: 0
 };
 
 const validationSchemas = [
@@ -344,29 +345,31 @@ export default function BuilderClient() {
 
     const handleDownload = () => {
         if (selectedTemplate === "template1") {
-            downloadPDF("template1", "Prime_CV_Template_1");
+            downloadPDF("template1", "Prime_CV_Resume_Template_1");
         } else {
-            downloadPDF("template2", "Prime_CV_Template_2");
+            downloadPDF("template2", "Prime_CV_Resume_Template_2");
         }
     };
 
     const handleDownloadAndSave = (values: ResumeValues) => {
-        const userId = 1
-        if (!userId) {
+        const loginUserStr = localStorage.getItem("prime_cv_authuser")
+        const loginUser = loginUserStr ? JSON.parse(loginUserStr) : null
+        const userEmail = loginUser?.email || "user_not_authorised"
+        
+        if (!userEmail) {
             alert("User not found. Kindly Logout and Login again")
             return
         }
-        const storageKey = `prime_cv_resumes_${userId}`
-        const existingResumes =
-            JSON.parse(localStorage.getItem(storageKey) || "[]")
+        const storageKey = `prime_cv_resumes_${userEmail}`
+        const existingResumes =JSON.parse(localStorage.getItem(storageKey) || "[]")
         // eslint-disable-next-line react-hooks/purity
         const timestamp = Date.now()
         const dateString = new Date(timestamp).toISOString()
         const newResume = {
+            ...values,
             templatNumber: selectedTemplate,
             resumeId: timestamp,
             createdAt: dateString,
-            ...values
         }
         const updatedResumes = [...existingResumes, newResume]
         localStorage.setItem(storageKey, JSON.stringify(updatedResumes))
@@ -440,11 +443,10 @@ export default function BuilderClient() {
                 <Formik
                     initialValues={initialValues}
                     validationSchema={validationSchemas[activeStep]}
-                    onSubmit={(values, { setTouched, resetForm }) => {
+                    onSubmit={(values, { setTouched }) => {
                         if (isLastStep) {
                             setSeeTemplates(true)
                             nextStep()
-                            resetForm()
                             setTouched({})
                         } else {
                             setTouched({})
@@ -541,6 +543,7 @@ export default function BuilderClient() {
                                         onClick={() => {
                                             handleDownload();
                                             handleDownloadAndSave(formik.values)
+                                            formik.resetForm()
                                             router.push("/")
                                         }}
                                         sx={{ borderRadius: "10px", }}
