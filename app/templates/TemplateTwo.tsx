@@ -35,13 +35,17 @@ type ResumeValues = {
 
 type Props = {
     values: ResumeValues
+    height?: number | string
+    width?: number | string
 }
 
 const TEAL = "#0097a7"
 const DARK = "#1a2332"
 const SIDEBAR_BG = "#f0f7f8"
 
-export default function TemplateTwo({ values }: Props) {
+export default function TemplateTwo({ values, height, width }: Props) {
+    const scale = width ? (typeof width === 'number' ? width / 900 : 1) : 1;
+
     const skillList = values.skills
         ? values.skills.split(",").map(s => s.trim()).filter(Boolean)
         : []
@@ -54,8 +58,9 @@ export default function TemplateTwo({ values }: Props) {
         <Paper
             elevation={6}
             sx={{
-                width: "100%",
-                maxWidth: 900,
+                width: width || "100%",
+                maxWidth: width || 900,
+                height: height || "auto",
                 mx: "auto",
                 borderRadius: 2,
                 overflow: "hidden",
@@ -63,11 +68,11 @@ export default function TemplateTwo({ values }: Props) {
                 fontFamily: "'Georgia', serif",
             }}
         >
-            <Grid container sx={{ minHeight: 600, minWidth: 550 }}>
+            <Grid container sx={{ minHeight: height || 600, minWidth: width ? 0 : 550, flexWrap: "nowrap" }}>
 
                 {/* LEFT SIDEBAR */}
                 <Grid
-                    size={{ xs: 12, md: 3.5 }}
+                    size={{ xs: 3.5 }}
                     sx={{
                         bgcolor: SIDEBAR_BG,
                         display: "flex",
@@ -88,8 +93,8 @@ export default function TemplateTwo({ values }: Props) {
                     >
                         <Box
                             sx={{
-                                width: 90,
-                                height: 90,
+                                width: 90 * scale,
+                                height: 90 * scale,
                                 borderRadius: "50%",
                                 border: "3px solid #fff",
                                 boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
@@ -101,7 +106,7 @@ export default function TemplateTwo({ values }: Props) {
                         >
                             <Typography
                                 sx={{
-                                    fontSize: 26,
+                                    fontSize: 26 * scale,
                                     fontWeight: 700,
                                     color: "#fff",
                                     letterSpacing: 2,
@@ -115,19 +120,22 @@ export default function TemplateTwo({ values }: Props) {
 
                     {/* Contact */}
                     <Box sx={{ px: 2.2, pt: 2.5, pb: 1 }}>
-                        <SidebarSection title="CONTACT" teal={TEAL} />
+                        <SidebarSection title="CONTACT" teal={TEAL} scale={scale} />
 
                         <ContactRow
-                            icon={<PhoneIcon sx={{ fontSize: 14, color: TEAL }} />}
+                            icon={<PhoneIcon sx={{ fontSize: 14 * scale, color: TEAL }} />}
                             text={`+91 ${values.phone}`}
+                            scale={scale}
                         />
                         <ContactRow
-                            icon={<EmailIcon sx={{ fontSize: 14, color: TEAL }} />}
+                            icon={<EmailIcon sx={{ fontSize: 14 * scale, color: TEAL }} />}
                             text={values.email}
+                            scale={scale}
                         />
                         <ContactRow
-                            icon={<LinkedInIcon sx={{ fontSize: 14, color: TEAL }} />}
+                            icon={<LinkedInIcon sx={{ fontSize: 14 * scale, color: TEAL }} />}
                             text={values.linkedin}
+                            scale={scale}
                         />
                     </Box>
 
@@ -135,7 +143,7 @@ export default function TemplateTwo({ values }: Props) {
 
                     {/* Skills */}
                     <Box sx={{ px: 2.2, pb: 1 }}>
-                        <SidebarSection title="SKILLS" teal={TEAL} />
+                        <SidebarSection title="SKILLS" teal={TEAL} scale={scale} />
                         <Stack spacing={0.4} sx={{ mt: 1 }}>
                             {skillList.map((skill, i) => (
                                 <Stack key={i} direction="row" sx={{ alignItems: "flex-start" }} spacing={0.8}>
@@ -149,7 +157,7 @@ export default function TemplateTwo({ values }: Props) {
                                             flexShrink: 0,
                                         }}
                                     />
-                                    <Typography sx={{ fontSize: 11.5, color: "#334155", lineHeight: 1.8 }}>
+                                    <Typography sx={{ fontSize: 11.5 * scale, color: "#334155", lineHeight: 1.8 }}>
                                         {skill}
                                     </Typography>
                                 </Stack>
@@ -161,11 +169,11 @@ export default function TemplateTwo({ values }: Props) {
 
                     {/* Certificate */}
                     <Box sx={{ px: 2.2, pb: 2 }}>
-                        <SidebarSection title="CERTIFICATE" teal={TEAL} />
+                        <SidebarSection title="CERTIFICATE" teal={TEAL} scale={scale} />
                         <Typography
                             sx={{
                                 mt: 1,
-                                fontSize: 12.5,
+                                fontSize: 12.5 * scale,
                                 fontWeight: 700,
                                 color: "#1a2332",
                                 lineHeight: 1.7,
@@ -176,7 +184,7 @@ export default function TemplateTwo({ values }: Props) {
                         <Typography
                             sx={{
                                 mt: 0.5,
-                                fontSize: 11.5,
+                                fontSize: 11.5 * scale,
                                 color: "#64748b",
                                 lineHeight: 1.8,
                             }}
@@ -188,7 +196,7 @@ export default function TemplateTwo({ values }: Props) {
 
                 {/* RIGHT MAIN */}
                 <Grid
-                    size={{ xs: 12, md: 8.5 }}
+                    size={{ xs: 8.5 }}
                     sx={{
                         display: "flex",
                         flexDirection: "column",
@@ -199,7 +207,7 @@ export default function TemplateTwo({ values }: Props) {
                     <Box sx={{ bgcolor: DARK, px: 3.5, py: 3 }}>
                         <Typography
                             sx={{
-                                fontSize: "2.1rem",
+                                fontSize: `${2.1 * scale}rem`,
                                 fontWeight: 700,
                                 color: TEAL,
                                 fontFamily: "'Georgia', serif",
@@ -215,7 +223,7 @@ export default function TemplateTwo({ values }: Props) {
                     <Box sx={{ px: 3.5, py: 2.5, flex: 1 }}>
 
                         {/* Projects */}
-                        <MainSection title="PROJECTS" teal={TEAL} />
+                        <MainSection title="PROJECTS" teal={TEAL} scale={scale} />
 
                         <ProjectCard
                             name={values.project1Name}
@@ -223,6 +231,7 @@ export default function TemplateTwo({ values }: Props) {
                             tech={values.project1Tech}
                             teal={TEAL}
                             dark={DARK}
+                            scale={scale}
                         />
                         <ProjectCard
                             name={values.project2Name}
@@ -230,12 +239,13 @@ export default function TemplateTwo({ values }: Props) {
                             tech={values.project2Tech}
                             teal={TEAL}
                             dark={DARK}
+                            scale={scale}
                         />
 
                         <Divider sx={{ my: 1.8, borderColor: "#e2e8f0" }} />
 
                         {/* Education */}
-                        <MainSection title="EDUCATION" teal={TEAL} />
+                        <MainSection title="EDUCATION" teal={TEAL} scale={scale} />
 
                         <EduRow
                             degree="B.Tech – CSE"
@@ -244,6 +254,7 @@ export default function TemplateTwo({ values }: Props) {
                             score={`${values.degreePercentage}%`}
                             teal={TEAL}
                             dark={DARK}
+                            scale={scale}
                         />
                         <EduRow
                             degree="Intermediate"
@@ -252,6 +263,7 @@ export default function TemplateTwo({ values }: Props) {
                             score={`${values.interPercentage}%`}
                             teal={TEAL}
                             dark={DARK}
+                            scale={scale}
                         />
                         <EduRow
                             degree="Secondary Education"
@@ -260,12 +272,13 @@ export default function TemplateTwo({ values }: Props) {
                             score={`${values.tenthPercentage}%`}
                             teal={TEAL}
                             dark={DARK}
+                            scale={scale}
                         />
 
                         <Divider sx={{ my: 1.8, borderColor: "#e2e8f0" }} />
 
                         {/* Achievement */}
-                        <MainSection title="ACHIEVEMENT" teal={TEAL} />
+                        <MainSection title="ACHIEVEMENT" teal={TEAL} scale={scale} />
 
                         <Stack direction="row" sx={{ alignItems: "flex-start" }} spacing={1}>
                             <Box
@@ -278,7 +291,7 @@ export default function TemplateTwo({ values }: Props) {
                                     flexShrink: 0,
                                 }}
                             />
-                            <Typography sx={{ fontSize: 12, color: "#475569", lineHeight: 1.8 }}>
+                            <Typography sx={{ fontSize: 12 * scale, color: "#475569", lineHeight: 1.8 }}>
                                 {values.achievement}
                             </Typography>
                         </Stack>
@@ -289,11 +302,11 @@ export default function TemplateTwo({ values }: Props) {
     )
 }
 
-function SidebarSection({ title, teal }: { title: string; teal: string }) {
+function SidebarSection({ title, teal, scale }: { title: string; teal: string; scale: number }) {
     return (
         <Typography
             sx={{
-                fontSize: 12,
+                fontSize: 12 * scale,
                 fontWeight: 700,
                 color: teal,
                 letterSpacing: 1,
@@ -308,11 +321,11 @@ function SidebarSection({ title, teal }: { title: string; teal: string }) {
     )
 }
 
-function MainSection({ title, teal }: { title: string; teal: string }) {
+function MainSection({ title, teal, scale }: { title: string; teal: string; scale: number }) {
     return (
         <Typography
             sx={{
-                fontSize: 14,
+                fontSize: 14 * scale,
                 fontWeight: 700,
                 color: teal,
                 letterSpacing: 1.2,
@@ -327,11 +340,11 @@ function MainSection({ title, teal }: { title: string; teal: string }) {
     )
 }
 
-function ContactRow({ icon, text }: { icon: React.ReactNode; text: string }) {
+function ContactRow({ icon, text, scale }: { icon: React.ReactNode; text: string; scale: number }) {
     return (
         <Stack direction="row" spacing={0.8} sx={{ alignItems: "flex-start", mb: 0.9 }}>
             <Box sx={{ flexShrink: 0, pt: "1px" }}>{icon}</Box>
-            <Typography sx={{ fontSize: 11.5, color: "#334155", lineHeight: 1.7, wordBreak: "break-all" }}>
+            <Typography sx={{ fontSize: 11.5 * scale, color: "#334155", lineHeight: 1.7, wordBreak: "break-all" }}>
                 {text}
             </Typography>
         </Stack>
@@ -344,22 +357,24 @@ function ProjectCard({
     tech,
     teal,
     dark,
+    scale,
 }: {
     name: string
     desc: string
     tech: string
     teal: string
     dark: string
+    scale: number
 }) {
     return (
         <Box sx={{ mb: 1.8 }}>
-            <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: dark, lineHeight: 1.5 }}>
+            <Typography sx={{ fontSize: 13.5 * scale, fontWeight: 700, color: dark, lineHeight: 1.5 }}>
                 {name}
             </Typography>
-            <Typography sx={{ mt: 0.4, fontSize: 12, color: "#475569", lineHeight: 1.8 }}>
+            <Typography sx={{ mt: 0.4, fontSize: 12 * scale, color: "#475569", lineHeight: 1.8 }}>
                 {desc}
             </Typography>
-            <Typography sx={{ mt: 0.5, fontSize: 12, fontWeight: 600, color: teal }}>
+            <Typography sx={{ mt: 0.5, fontSize: 12 * scale, fontWeight: 600, color: teal }}>
                 Tech Stack: {tech}
             </Typography>
         </Box>
@@ -373,6 +388,7 @@ function EduRow({
     score,
     teal,
     dark,
+    scale,
 }: {
     degree: string
     college: string
@@ -380,19 +396,20 @@ function EduRow({
     score: string
     teal: string
     dark: string
+    scale: number
 }) {
     return (
         <Box sx={{ mb: 1.6 }}>
-            <Typography sx={{ fontSize: 11.5, color: "#64748b", fontStyle: "italic" }}>
+            <Typography sx={{ fontSize: 11.5 * scale, color: "#64748b", fontStyle: "italic" }}>
                 {year}
             </Typography>
-            <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: dark, mt: 0.3 }}>
+            <Typography sx={{ fontSize: 13.5 * scale, fontWeight: 700, color: dark, mt: 0.3 }}>
                 {degree}
             </Typography>
-            <Typography sx={{ fontSize: 12, color: teal, fontWeight: 600 }}>
+            <Typography sx={{ fontSize: 12 * scale, color: teal, fontWeight: 600 }}>
                 {college}
             </Typography>
-            <Typography sx={{ fontSize: 12, color: "#475569", mt: 0.2 }}>
+            <Typography sx={{ fontSize: 12 * scale, color: "#475569", mt: 0.2 }}>
                 Score: {score}
             </Typography>
         </Box>

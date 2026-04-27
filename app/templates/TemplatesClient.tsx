@@ -34,7 +34,8 @@ const templatePageStyles = {
     borderRadius: { xs: 2, sm: 3, md: 4 },
     overflow: "hidden",
     bgcolor: "#fff",
-    boxSizing: "border-box"
+    boxSizing: "border-box",
+    mb:-40
 }
 export default function TemplatesClient() {
     return (
@@ -68,7 +69,7 @@ export default function TemplatesClient() {
                         >
                             Template 1
                         </Typography>
-                        <TemplateOne values={defaultValues} />
+                        <TemplateOne values={defaultValues} height={700} width="90%" />
                     </Box>
 
                     <Box sx={templatePageStyles}>
@@ -82,7 +83,7 @@ export default function TemplatesClient() {
                         >
                             Template 2
                         </Typography>
-                        <TemplateTwo values={defaultValues} />
+                        <TemplateTwo values={defaultValues} height={500} width="90%" />
                     </Box>
                 </Box>
             </Box>
