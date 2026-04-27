@@ -64,34 +64,34 @@ const skillOptions = [
 ]
 
 const initialValues: ResumeValues = {
-    name: "Shanmukha Rao Thangudu",
-    email: "shannuthangudu@gmail.com",
-    phone: "+91 9876543210",
-    linkedin: "https://www.linkedin.com/in/shanmukharaothangdu",
+    name: "",
+    email: "",
+    phone: "",
+    linkedin: "",
 
-    tenthSchool: "Abhydaya high scool",
-    tenthPercentage: "92%",
+    tenthSchool: "",
+    tenthPercentage: "",
 
-    interCollege: "Narayana Junior College",
-    interPercentage: "89%",
+    interCollege: "",
+    interPercentage: "",
 
-    degreeCollege: "Sri vasavi engg college",
-    degreePercentage: "8.4 CGPA",
+    degreeCollege: "",
+    degreePercentage: "",
 
-    project1Name: "Student Management System",
-    project1Desc: "A web application to manage student records, attendance, and marks efficiently.",
-    project1Tech: "React, Node.js, Express, MongoDB",
+    project1Name: "",
+    project1Desc: "",
+    project1Tech: "",
 
-    project2Name: "Weather Forecast App",
-    project2Desc: "An app that shows live weather updates and forecasts using external APIs.",
-    project2Tech: "React, JavaScript, OpenWeather API, CSS",
+    project2Name: "",
+    project2Desc: "",
+    project2Tech: "",
 
-    skills: "JavaScript, React.js, Node.js, MongoDB, HTML, CSS, Git",
+    skills: "",
 
-    certificateName: "Full Stack Web Development Certification",
-    certificateDesc: "Completed training in MERN Stack development including frontend and backend projects.",
+    certificateName: "",
+    certificateDesc: "",
 
-    achievement: "Secured first prize in college coding competition."
+    achievement: ""
 };
 
 const validationSchemas = [
@@ -135,7 +135,7 @@ const validationSchemas = [
 ]
 
 export default function BuilderClient() {
-    const [activeStep, setActiveStep] = useState<number>(5)
+    const [activeStep, setActiveStep] = useState<number>(0)
     const [seeTemplates, setSeeTemplates] = useState<boolean>(false)
     const [selectedTemplate, setSelectedTemplate] = useState<string>("template1")
 

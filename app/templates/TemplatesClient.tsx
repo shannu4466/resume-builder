@@ -24,7 +24,9 @@ const defaultValues = {
     skills: "",
     certificateName: "",
     certificateDesc: "",
-    achievement: ""
+    achievement: "",
+    templatNumber: "",
+    resumeId: 0
 };
 const templatePageStyles = {
     width: "100%",
@@ -83,7 +85,7 @@ export default function TemplatesClient() {
                         >
                             Template 2
                         </Typography>
-                        <TemplateTwo values={defaultValues} height={500} width="90%" />
+                        <TemplateTwo values={defaultValues} height={700} width="90%" />
                     </Box>
                 </Box>
             </Box>

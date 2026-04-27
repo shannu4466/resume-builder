@@ -212,7 +212,7 @@ export default function TemplateTwo({ values, height, width }: Props) {
                                 color: TEAL,
                                 fontFamily: "'Georgia', serif",
                                 letterSpacing: 0.5,
-                                lineHeight: 1.15,
+                                lineHeight: 1.53,
                             }}
                         >
                             {values.name || "Your Name"}
