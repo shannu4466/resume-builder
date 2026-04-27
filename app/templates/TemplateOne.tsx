@@ -21,7 +21,9 @@ export type ResumeValues = {
     skills: string
     certificateName: string
     certificateDesc: string
-    achievement: string
+    achievement: string,
+    templatNumber: string,
+    resumeId: number,
 }
 
 type Props = {
