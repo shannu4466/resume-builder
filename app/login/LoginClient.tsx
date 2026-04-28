@@ -186,7 +186,7 @@ export default function AuthClient() {
                                 padding: "10px",
                                 background: "none",
                                 border: "none",
-                                color: "#6b6b6b",
+                                color: "black",
                                 cursor: "pointer",
                                 fontSize: "15px",
                                 fontWeight: 600,
@@ -204,7 +204,7 @@ export default function AuthClient() {
                                 padding: "10px",
                                 background: "none",
                                 border: "none",
-                                color: "#6b6b6b",
+                                color: "black",
                                 cursor: "pointer",
                                 fontSize: "15px",
                                 fontWeight: 600,
@@ -306,7 +306,7 @@ export default function AuthClient() {
                                                         onChange={(e) => field.onChange(e.target.checked)}
                                                         sx={{
                                                             color: "#aaa",
-                                                            "&.Mui-checked": { color: "primary" }
+                                                            "&.Mui-checked": { color: "#05ab32" }
                                                         }}
                                                     />
                                                 )}
@@ -484,6 +484,8 @@ const buttonStyle = {
         background: "blue",
         boxShadow: "none",
     },
+    backgroundColor:"#05ab32",
+    color:"white"
 }
 
 function AnimatedPanel({ active, children }: { active: boolean; children: React.ReactNode }) {

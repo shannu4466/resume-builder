@@ -26,7 +26,8 @@ const defaultValues = {
     certificateDesc: "",
     achievement: "",
     templatNumber: "",
-    resumeId: 0
+    resumeId: 0,
+    createdAt: ""
 };
 const templatePageStyles = {
     width: "100%",
@@ -37,7 +38,7 @@ const templatePageStyles = {
     overflow: "hidden",
     bgcolor: "#fff",
     boxSizing: "border-box",
-    mb:-40
+    mb: -40
 }
 export default function TemplatesClient() {
     return (

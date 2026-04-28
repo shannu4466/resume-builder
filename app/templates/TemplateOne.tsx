@@ -2,6 +2,7 @@
 import { Box, Divider, Grid, Paper, Stack, Typography } from "@mui/material"
 
 export type ResumeValues = {
+    createdAt: string | number | Date
     name: string
     email: string
     phone: string

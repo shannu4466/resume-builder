@@ -92,7 +92,8 @@ const initialValues: ResumeValues = {
 
     achievement: "",
     templatNumber: "",
-    resumeId: 0
+    resumeId: 0,
+    createdAt: ''
 };
 
 const validationSchemas = [
@@ -158,7 +159,8 @@ export default function BuilderClient() {
             onChange: handleChange,
             onBlur: handleBlur,
             error: Boolean(touched[name] && errors[name]),
-            helperText: touched[name] ? errors[name] : ""
+            helperText: touched[name] ? errors[name] : "",
+            color: "success" as const
         })
 
         const addSkill = (skill: string) => {
@@ -355,13 +357,13 @@ export default function BuilderClient() {
         const loginUserStr = localStorage.getItem("prime_cv_authuser")
         const loginUser = loginUserStr ? JSON.parse(loginUserStr) : null
         const userEmail = loginUser?.email || "user_not_authorised"
-        
+
         if (!userEmail) {
             alert("User not found. Kindly Logout and Login again")
             return
         }
         const storageKey = `prime_cv_resumes_${userEmail}`
-        const existingResumes =JSON.parse(localStorage.getItem(storageKey) || "[]")
+        const existingResumes = JSON.parse(localStorage.getItem(storageKey) || "[]")
         // eslint-disable-next-line react-hooks/purity
         const timestamp = Date.now()
         const dateString = new Date(timestamp).toISOString()
@@ -399,7 +401,7 @@ export default function BuilderClient() {
                         borderRadius: "50%",
                         p: 1,
                         "&:hover": {
-                            backgroundColor: "gray"
+                            backgroundColor: "#05ab32"
                         }
                     }}
                 />
@@ -416,20 +418,48 @@ export default function BuilderClient() {
                         sx={{
                             mb: 5,
                             width: "100%",
+
                             "& .MuiStep-root": {
                                 flex: 1,
-                                minWidth: 0
+                                minWidth: 0,
                             },
+
                             "& .MuiStepLabel-label": {
                                 fontSize: { xs: "10px", sm: "14px" },
                                 whiteSpace: "normal",
                                 textAlign: "center",
                                 wordBreak: "break-word",
-                                lineHeight: 1.2
+                                lineHeight: 1.2,
+                                color: "#05ab32",
                             },
+
+                            "& .MuiStepLabel-label.Mui-active": {
+                                color: "#05ab32",
+                                fontWeight: 600,
+                            },
+
+                            "& .MuiStepLabel-label.Mui-completed": {
+                                color: "#05ab32",
+                                fontWeight: 600,
+                            },
+
                             "& .MuiStepIcon-root": {
-                                fontSize: { xs: "1.3rem", sm: "1.5rem" }
-                            }
+                                fontSize: { xs: "1.3rem", sm: "1.5rem" },
+                                color: "#05ab32",
+                            },
+
+                            "& .MuiStepIcon-root.Mui-active": {
+                                color: "#05ab32",
+                            },
+
+                            "& .MuiStepIcon-root.Mui-completed": {
+                                color: "#05ab32",
+                            },
+
+                            "& .MuiStepConnector-line": {
+                                borderColor: "#05ab32",
+                                borderTopWidth: 2,
+                            },
                         }}
                     >
                         {steps.map((step) => (
@@ -494,6 +524,7 @@ export default function BuilderClient() {
                                                 <Radio
                                                     checked={selectedTemplate === "template1"}
                                                     onChange={() => setSelectedTemplate("template1")}
+                                                    color="success"
                                                 />
                                             }
                                             label="Template One"
@@ -518,6 +549,7 @@ export default function BuilderClient() {
                                                 <Radio
                                                     checked={selectedTemplate === "template2"}
                                                     onChange={() => setSelectedTemplate("template2")}
+                                                    color="success"
                                                 />
                                             }
                                             label="Template Two"
@@ -531,10 +563,11 @@ export default function BuilderClient() {
                             )}
                             {seeTemplates && (
                                 <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", mt: 4 }}>
-                                    <Button variant="outlined" onClick={() => {
-                                        setActiveStep(5)
-                                        setSeeTemplates(false)
-                                    }}>
+                                    <Button variant="outlined" sx={{ color: "#05ab32", borderColor: "#05ab32" }}
+                                        onClick={() => {
+                                            setActiveStep(5)
+                                            setSeeTemplates(false)
+                                        }}>
                                         EDIT
                                     </Button>
                                     <Button
@@ -546,7 +579,7 @@ export default function BuilderClient() {
                                             formik.resetForm()
                                             router.push("/")
                                         }}
-                                        sx={{ borderRadius: "10px", }}
+                                        sx={{ borderRadius: "10px", backgroundColor: "#05ab32", color: "white" }}
                                     >
                                         Download Resume
                                     </Button>
@@ -575,11 +608,12 @@ export default function BuilderClient() {
                                                     variant="outlined"
                                                     disabled={activeStep === 0}
                                                     onClick={prevStep}
+                                                    sx={{ backgroundColor: "#05ab32", color: "white" }}
                                                 >
                                                     Back
                                                 </Button>
 
-                                                <Button variant="contained" type="submit">
+                                                <Button variant="contained" type="submit" sx={{ backgroundColor: "#05ab32" }}>
                                                     {isLastStep ? "Submit" : "Next"}
                                                 </Button>
 

@@ -1,13 +1,18 @@
 "use client"
 
 import Navbar from "@/components/Navbar";
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 
 import TemplateOne from "../templates/TemplateOne";
 import TemplateTwo from "../templates/TemplateTwo";
 
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import DownloadIcon from '@mui/icons-material/Download';
+
 import { ResumeValues } from "../templates/TemplateOne";
+
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 export default function HistoryClient() {
     const loginUserStr = localStorage.getItem("prime_cv_authuser")
@@ -15,6 +20,27 @@ export default function HistoryClient() {
     const userEmail = loginUser?.email || "user_not_authorised"
 
     const storedResumes = JSON.parse(localStorage.getItem(`prime_cv_resumes_${userEmail}`) || "[]")
+
+    const downloadPDF = async (id: string, fileName: string) => {
+        const element = document.getElementById(id);
+
+        if (!element) {
+            alert("Element not found");
+            return;
+        }
+
+        const canvas = await html2canvas(element, {
+            scale: 3,
+            useCORS: true
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+        const pdfWidth = 210;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        const pdf = new jsPDF("p", "mm", [pdfHeight, pdfWidth]);
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`${fileName}.pdf`);
+    };
 
     return (
         <Box>
@@ -27,20 +53,75 @@ export default function HistoryClient() {
                 </Box>
                 : <Box sx={{
                     display: "flex",
-                    flexDirection: {
-                        xs: "column",
-                        md: "column",
-                        lg: "row"
-                    },
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    overflowX: "hidden"
+                    flexWrap: "wrap",
+                    width: "100%",
+                    alignItems: "flex-start"
                 }}>
                     {storedResumes.map((eachResume: ResumeValues) => (
-                        <Box key={eachResume.resumeId} sx={{ m: 2 }}>
-                            {eachResume.templatNumber === "template1"
-                                ? <TemplateOne values={eachResume} height={900} width="90%" />
-                                : <TemplateTwo values={eachResume} height={900} width="90%" />}
+                        <Box
+                            key={eachResume.resumeId}
+                            sx={{
+                                p: 2,
+                                width: {
+                                    xs: "100%",
+                                    sm: "100%",
+                                    md: "100%",
+                                    lg: "50%"
+                                },
+                                display: "flex",
+                                boxSizing: "border-box"
+                            }}
+                        >
+                            <Box>
+                                <Typography sx={{ textAlign: "center", fontWeight:"bold", mb:1 }}>Date of generation : {new Date(eachResume.createdAt).toLocaleString()}</Typography>
+                                <Box
+                                    sx={{
+                                        position: "relative",
+                                        width: "100%",
+
+                                        "& .download-btn": {
+                                            opacity: 0,
+                                            visibility: "hidden",
+                                            transition: "all 0.3s ease"
+                                        },
+
+                                        "&:hover .download-btn": {
+                                            opacity: 1,
+                                            visibility: "visible"
+                                        }
+                                    }}
+                                >
+                                    <Box id={String(eachResume.resumeId)}>
+                                        {eachResume.templatNumber === "template1" ? (
+                                            <TemplateOne values={eachResume} height={900} width="90%" />
+                                        ) : (
+                                            <TemplateTwo values={eachResume} height={900} width="90%" />
+                                        )}
+                                    </Box>
+
+                                    <Button
+                                        className="download-btn"
+                                        onClick={() => downloadPDF(String(eachResume.resumeId), `Prime_CV_Resume_${eachResume.resumeId}`)}
+                                        sx={{
+                                            position: "absolute",
+                                            top: 10,
+                                            right: 10,
+                                            minWidth: "44px",
+                                            width: "44px",
+                                            height: "44px",
+                                            borderRadius: "50%",
+                                            backdropFilter: "blur(20px)",
+                                            background: "rgba(255,255,255,0.18)",
+                                            border: "1px solid rgba(255,255,255,0.25)",
+                                            boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+                                            zIndex: 100,
+                                            mr: 4,
+                                        }}
+                                    >
+                                        <DownloadIcon sx={{ color: "#05ab32" }} />
+                                    </Button>
+                                </Box>
+                            </Box>
                         </Box>
                     ))}
                 </Box>

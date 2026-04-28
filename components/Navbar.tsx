@@ -77,7 +77,7 @@ export default function Navbar() {
                                         color: "#374151",
                                         fontWeight: 500,
                                         textTransform: "none",
-                                        backgroundColor: pathname === item.path ? "#e5e7eb" : "transparent",
+                                        backgroundColor: pathname === item.path ? "#97e6ad" : "transparent",
                                     }}
                                     onClick={() => {
                                         if (item.label === 'Logout') {
@@ -98,6 +98,7 @@ export default function Navbar() {
                                     textTransform: "none",
                                     borderRadius: "10px",
                                     px: 3,
+                                    backgroundColor: "#05ab32",
                                 }}
                             >
                                 Build Resume
@@ -131,7 +132,7 @@ export default function Navbar() {
                                             logout()
                                         }
                                     }}
-                                    sx={{ backgroundColor: pathname === item.path ? "#e5e7eb" : "transparent", }}
+                                    sx={{ backgroundColor: pathname === item.path ? "#97e6ad" : "transparent", }}
                                 >
                                     <ListItemText primary={item.label} />
                                 </ListItemButton>
@@ -146,6 +147,7 @@ export default function Navbar() {
                                 href="/builder"
                                 onClick={() => setOpen(false)}
                                 sx={{
+                                    backgroundColor: "#05ab32",
                                     textTransform: "none",
                                     borderRadius: "10px",
                                 }}

@@ -43,7 +43,7 @@ export default function Home() {
                   fontSize: { xs: "2.4rem", md: "4rem" },
                   lineHeight: 1.1,
                   mb: 2,
-                  fontWeight:"bold"
+                  fontWeight: "bold"
                 }}
               >
                 Build Your Perfect Resume With Prime CV
@@ -66,7 +66,8 @@ export default function Home() {
                     px: 4,
                     py: 1.5,
                     borderRadius: "12px",
-                    textTransform: "none"
+                    textTransform: "none",
+                    backgroundColor: "#05ab32"
                   }}
                 >
                   Start Building
@@ -80,7 +81,9 @@ export default function Home() {
                     px: 4,
                     py: 1.5,
                     borderRadius: "12px",
-                    textTransform: "none"
+                    textTransform: "none",
+                    borderColor: "#05ab32",
+                    color: "#05ab32"
                   }}
                 >
                   View Templates
@@ -111,7 +114,7 @@ export default function Home() {
                     Prime CV Template
                   </Typography>
 
-                  <Box sx={{ height: 12, bgcolor: "#2563eb", borderRadius: 5, mb: 2, width: "55%" }} />
+                  <Box sx={{ height: 12, bgcolor: "#05ab32", borderRadius: 5, mb: 2, width: "55%" }} />
                   <Box sx={{ height: 10, bgcolor: "#dbeafe", borderRadius: 5, mb: 3, width: "80%" }} />
 
                   {[1, 2, 3, 4, 5].map(item => (
@@ -187,7 +190,7 @@ export default function Home() {
           </Typography>
 
           <Typography
-            sx={{ opacity: 0.8, mb: 4, textAlign:"center" }}
+            sx={{ opacity: 0.8, mb: 4, textAlign: "center" }}
           >
             Build a resume that stands out and impress recruiters today
           </Typography>
@@ -201,7 +204,8 @@ export default function Home() {
                 px: 5,
                 py: 1.5,
                 borderRadius: "12px",
-                textTransform: "none"
+                textTransform: "none",
+                backgroundColor: "#05ab32"
               }}
             >
               Create Resume Now
