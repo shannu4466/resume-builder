@@ -481,7 +481,7 @@ const buttonStyle = {
     background: "primary",
     boxShadow: "none",
     "&:hover": {
-        background: "blue",
+        background: "green",
         boxShadow: "none",
     },
     backgroundColor:"#05ab32",

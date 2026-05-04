@@ -27,7 +27,13 @@ const defaultValues = {
     achievement: "",
     templatNumber: "",
     resumeId: 0,
-    createdAt: ""
+    createdAt: "",
+    jobTitle: "",
+    companyName: "",
+    Location: "",
+    startDate: "",
+    endDate: "",
+    responsibilities: ""
 };
 const templatePageStyles = {
     width: "100%",

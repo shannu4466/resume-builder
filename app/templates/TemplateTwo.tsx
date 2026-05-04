@@ -31,6 +31,12 @@ type ResumeValues = {
     certificateName: string
     certificateDesc: string
     achievement: string
+    jobTitle?: string
+    companyName?: string
+    Location?: string
+    startDate?: Date | string | number
+    endDate?: Date | string | number
+    responsibilities?: string
 }
 
 type Props = {
@@ -41,7 +47,7 @@ type Props = {
 
 const TEAL = "#0097a7"
 const DARK = "#1a2332"
-const SIDEBAR_BG = "#f0f7f8"
+const SIDEBAR_BG = "red"
 
 export default function TemplateTwo({ values, height, width }: Props) {
     const scale = width ? (typeof width === 'number' ? width / 900 : 1) : 1;
@@ -222,6 +228,31 @@ export default function TemplateTwo({ values, height, width }: Props) {
                     {/* Body */}
                     <Box sx={{ px: 3.5, py: 2.5, flex: 1 }}>
 
+                        {/* Experience */}
+                        {values.jobTitle && (
+                            <>
+                                <MainSection title="EXPERIENCE" teal={TEAL} scale={scale} />
+                                <Box sx={{ mb: 2.5 }}>
+                                    <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                                        <Typography sx={{ fontSize: 14 * scale, fontWeight: 700, color: DARK }}>
+                                            {values.jobTitle}
+                                        </Typography>
+                                        <Typography sx={{ fontSize: 11 * scale, color: "#64748b", fontStyle: "italic" }}>
+                                            {values.startDate ? new Date(values.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : ""} -
+                                            {values.endDate ? new Date(values.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : " Present"}
+                                        </Typography>
+                                    </Stack>
+                                    <Typography sx={{ fontSize: 12.5 * scale, fontWeight: 600, color: TEAL, mb: 0.5 }}>
+                                        {values.companyName} | {values.Location}
+                                    </Typography>
+                                    <Typography sx={{ fontSize: 12 * scale, color: "#475569", lineHeight: 1.7, whiteSpace: "pre-line" }}>
+                                        {values.responsibilities}
+                                    </Typography>
+                                </Box>
+                                <Divider sx={{ my: 1.8, borderColor: "#e2e8f0" }} />
+                            </>
+                        )}
+
                         {/* Projects */}
                         <MainSection title="PROJECTS" teal={TEAL} scale={scale} />
 
@@ -254,7 +285,7 @@ export default function TemplateTwo({ values, height, width }: Props) {
                             score={`${values.degreePercentage}%`}
                             teal={TEAL}
                             dark={DARK}
-                            scale={scale}
+                            scale={scale} accent={""}
                         />
                         <EduRow
                             degree="Intermediate"
@@ -263,7 +294,7 @@ export default function TemplateTwo({ values, height, width }: Props) {
                             score={`${values.interPercentage}%`}
                             teal={TEAL}
                             dark={DARK}
-                            scale={scale}
+                            scale={scale} accent={""}
                         />
                         <EduRow
                             degree="Secondary Education"
@@ -272,7 +303,7 @@ export default function TemplateTwo({ values, height, width }: Props) {
                             score={`${values.tenthPercentage}%`}
                             teal={TEAL}
                             dark={DARK}
-                            scale={scale}
+                            scale={scale} accent={""}
                         />
 
                         <Divider sx={{ my: 1.8, borderColor: "#e2e8f0" }} />
@@ -388,6 +419,7 @@ function EduRow({
     score,
     teal,
     dark,
+    accent,
     scale,
 }: {
     degree: string
@@ -396,22 +428,27 @@ function EduRow({
     score: string
     teal: string
     dark: string
+    accent: string
     scale: number
 }) {
     return (
-        <Box sx={{ mb: 1.6 }}>
-            <Typography sx={{ fontSize: 11.5 * scale, color: "#64748b", fontStyle: "italic" }}>
-                {year}
-            </Typography>
-            <Typography sx={{ fontSize: 13.5 * scale, fontWeight: 700, color: dark, mt: 0.3 }}>
-                {degree}
-            </Typography>
-            <Typography sx={{ fontSize: 12 * scale, color: teal, fontWeight: 600 }}>
-                {college}
-            </Typography>
-            <Typography sx={{ fontSize: 12 * scale, color: "#475569", mt: 0.2 }}>
-                Score: {score}
-            </Typography>
-        </Box>
+        <Stack direction="row" spacing={2} sx={{ mb: 1.6 }}>
+            <Box sx={{ minWidth: 90 * scale, flexShrink: 0 }}>
+                <Typography sx={{ fontSize: 11 * scale, color: "#94a3b8", fontStyle: "italic", lineHeight: 1.6 }}>
+                    {year}
+                </Typography>
+                <Typography sx={{ fontSize: 11.5 * scale, fontWeight: 700, color: accent }}>
+                    {score}
+                </Typography>
+            </Box>
+            <Box>
+                <Typography sx={{ fontSize: 13 * scale, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.5 }}>
+                    {degree}
+                </Typography>
+                <Typography sx={{ fontSize: 12 * scale, color: "#475569", lineHeight: 1.7 }}>
+                    {college}
+                </Typography>
+            </Box>
+        </Stack>
     )
 }

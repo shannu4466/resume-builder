@@ -12,12 +12,15 @@ import {
     Grid,
     Radio,
     Step,
-    StepLabel,
+    StepButton,
     Stepper,
     TextField,
     Typography
 } from "@mui/material";
-import { Formik, FormikProps } from "formik";
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { FormikProps, useFormik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
 import Navbar from "../../components/Navbar";
@@ -27,18 +30,50 @@ import { useRouter } from 'next/navigation';
 import TemplateOne from "../templates/TemplateOne";
 import TemplateTwo from "../templates/TemplateTwo";
 
+import dayjs from 'dayjs';
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-import { ResumeValues } from "../templates/TemplateOne";
+type ResumeValues = {
+    name: string
+    email: string
+    phone: string
+    linkedin: string
+    tenthSchool: string
+    tenthPercentage: number | string
+    interCollege: string
+    interPercentage: number | string
+    degreeCollege: string
+    degreePercentage: number | string
+    project1Name: string
+    project1Desc: string
+    project1Tech: string
+    project2Name: string
+    project2Desc: string
+    project2Tech: string
+    skills: string
+    certificateName: string
+    certificateDesc: string
+    achievement: string
+    jobTitle?: string
+    companyName?: string
+    Location?: string
+    startDate?: Date | string | number
+    endDate?: Date | string | number
+    responsibilities?: string
+    templatNumber?: string
+    resumeId?: number
+    createdAt?: string
+}
 
 const steps = [
-    "Personal Details",
-    "Education",
-    "Projects",
-    "Skills",
-    "Certificates",
-    "Achievements"
+    { stepName: "Personal Details", id: 0 },
+    { stepName: "Education", id: 1 },
+    { stepName: "Projects", id: 2 },
+    { stepName: "Skills", id: 3 },
+    { stepName: "Work Experience", id: 4 },
+    { stepName: "Certificates", id: 5 },
+    { stepName: "Achievements", id: 6 },
 ]
 
 const skillOptions = [
@@ -93,46 +128,61 @@ const initialValues: ResumeValues = {
     achievement: "",
     templatNumber: "",
     resumeId: 0,
-    createdAt: ''
+    createdAt: '',
+    jobTitle: '',
+    companyName: '',
+    Location: '',
+    startDate: '',
+    endDate: '',
+    responsibilities: ''
 };
 
 const validationSchemas = [
     Yup.object({
-        name: Yup.string().required("*Required"),
-        email: Yup.string().email("Invalid email").required("*Required"),
-        phone: Yup.string().required("*Required").matches(/^[0-9]{10}$/, "Phone number must be 10 digits"),
-        linkedin: Yup.string().required("*Required").url("Enter a valid Linkedin Url")
+        name: Yup.string(),
+        email: Yup.string().email("Invalid email"),
+        phone: Yup.string().matches(/^[0-9]{10}$/, "Phone number must be 10 digits"),
+        linkedin: Yup.string().url("Enter a valid Linkedin Url")
     }),
 
     Yup.object({
-        tenthSchool: Yup.string().required("*Required"),
-        tenthPercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100").required("*Required"),
-        interCollege: Yup.string().required("*Required"),
-        interPercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100").required("*Required"),
-        degreeCollege: Yup.string().required("*Required"),
-        degreePercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100").required("*Required"),
+        tenthSchool: Yup.string(),
+        tenthPercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100"),
+        interCollege: Yup.string(),
+        interPercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100"),
+        degreeCollege: Yup.string(),
+        degreePercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100"),
     }),
 
     Yup.object({
-        project1Name: Yup.string().required("*Required"),
-        project1Desc: Yup.string().required("*Required"),
-        project1Tech: Yup.string().required("*Required"),
-        project2Name: Yup.string().required("*Required"),
-        project2Desc: Yup.string().required("*Required"),
-        project2Tech: Yup.string().required("*Required")
+        project1Name: Yup.string(),
+        project1Desc: Yup.string(),
+        project1Tech: Yup.string(),
+        project2Name: Yup.string(),
+        project2Desc: Yup.string(),
+        project2Tech: Yup.string()
     }),
 
     Yup.object({
-        skills: Yup.string().required("*Required")
+        skills: Yup.string()
     }),
 
     Yup.object({
-        certificateName: Yup.string().required("*Required"),
-        certificateDesc: Yup.string().required("*Required")
+        jobTitle: Yup.string(),
+        companyName: Yup.string(),
+        Location: Yup.string(),
+        startDate: Yup.string(),
+        endDate: Yup.string(),
+        responsibilities: Yup.string()
     }),
 
     Yup.object({
-        achievement: Yup.string().required("*Required")
+        certificateName: Yup.string(),
+        certificateDesc: Yup.string()
+    }),
+
+    Yup.object({
+        achievement: Yup.string()
     })
 ]
 
@@ -147,6 +197,23 @@ export default function BuilderClient() {
     const prevStep = () => setActiveStep(prev => prev - 1)
 
     const router = useRouter()
+
+    const formik = useFormik({
+        initialValues,
+        validationSchema: validationSchemas[activeStep],
+        onSubmit: (values, { setTouched }) => {
+            if (isLastStep) {
+                setSeeTemplates(true)
+                nextStep()
+                setTouched({})
+            } else {
+                setTouched({})
+                nextStep()
+            }
+        }
+    })
+
+    console.log(formik)
 
     const renderFields = (formik: FormikProps<ResumeValues>) => {
         const { values, handleChange, handleBlur, touched, errors, setFieldValue } = formik
@@ -209,11 +276,11 @@ export default function BuilderClient() {
                         </Grid>
 
                         <Grid size={{ xs: 12, md: 8 }}>
-                            <TextField {...fieldProps("interCollege", "Inter College Name")} />
+                            <TextField {...fieldProps("interCollege", "Intermediate/Diploma College Name")} />
                         </Grid>
 
                         <Grid size={{ xs: 12, md: 4 }}>
-                            <TextField {...fieldProps("interPercentage", "Inter Percentage")} />
+                            <TextField {...fieldProps("interPercentage", "Intermediate/Diploma Percentage")} />
                         </Grid>
 
                         <Grid size={{ xs: 12, md: 8 }}>
@@ -296,6 +363,58 @@ export default function BuilderClient() {
             case 4:
                 return (
                     <Grid container spacing={3}>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <TextField {...fieldProps("jobTitle", "Job Title")} />
+                        </Grid>
+
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <TextField {...fieldProps("companyName", "Company Name")} />
+                        </Grid>
+
+                        <Grid size={{ xs: 12 }}>
+                            <TextField {...fieldProps("Location", "Location (e.g. Remote, New York)")} />
+                        </Grid>
+
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <DatePicker
+                                    label="Start Date"
+                                    value={values.startDate ? dayjs(values.startDate) : null}
+                                    onChange={(newValue: dayjs.Dayjs | null) => setFieldValue("startDate", newValue ? newValue.toISOString() : "")}
+                                    slotProps={{
+                                        textField: {
+                                            fullWidth: true,
+                                            error: Boolean(touched.startDate && errors.startDate),
+                                            helperText: touched.startDate ? errors.startDate : ""
+                                        }
+                                    }}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <DatePicker
+                                    label="End Date"
+                                    value={values.endDate ? dayjs(values.endDate) : null}
+                                    onChange={(newValue: dayjs.Dayjs | null) => setFieldValue("endDate", newValue ? newValue.toISOString() : "")}
+                                    slotProps={{
+                                        textField: {
+                                            fullWidth: true,
+                                            error: Boolean(touched.endDate && errors.endDate),
+                                            helperText: touched.endDate ? errors.endDate : ""
+                                        }
+                                    }}
+                                />
+                            </Grid>
+                        </LocalizationProvider>
+
+                        <Grid size={{ xs: 12 }}>
+                            <TextField {...fieldProps("responsibilities", "Responsibilities")} multiline rows={4} />
+                        </Grid>
+                    </Grid>
+                )
+
+            case 5:
+                return (
+                    <Grid container spacing={3}>
                         <Grid size={{ xs: 12 }}>
                             <TextField {...fieldProps("certificateName", "Certificate Name")} />
                         </Grid>
@@ -310,7 +429,7 @@ export default function BuilderClient() {
                     </Grid>
                 )
 
-            case 5:
+            case 6:
                 return (
                     <TextField
                         {...fieldProps("achievement", "Achievement")}
@@ -391,7 +510,7 @@ export default function BuilderClient() {
                         md: "none",
                         lg: "block",
                         xl: "block"
-                    }
+                    },
                 }}
             >
                 <ArrowBackIcon
@@ -402,89 +521,75 @@ export default function BuilderClient() {
                         p: 1,
                         "&:hover": {
                             backgroundColor: "#05ab32"
-                        }
+                        },
                     }}
                 />
             </Typography>
-            <Box sx={{ maxWidth: 900, mx: "auto", px: 2, py: 5 }}>
-                <Typography variant="h6" sx={{ fontWeight: "bold", mb: 4 }}>
-                    {seeTemplates ? "Select Template To Download (Download now to view its full content)" : "Build Your Resume"}
-                </Typography>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Box sx={{ maxWidth: 900, mx: "auto", px: 2, py: 5 }}>
+                    <Typography variant="h6" sx={{ fontWeight: "bold", mb: 4 }}>
+                        {seeTemplates ? "Select Template To Download (Download now to view its full content)" : "Build Your Resume"}
+                    </Typography>
 
-                {!seeTemplates && (
-                    <Stepper
-                        activeStep={activeStep}
-                        alternativeLabel
-                        sx={{
-                            mb: 5,
-                            width: "100%",
+                    {!seeTemplates && (
+                        <Stepper
+                            activeStep={activeStep}
+                            alternativeLabel
+                            sx={{
+                                mb: 5,
+                                width: "100%",
 
-                            "& .MuiStep-root": {
-                                flex: 1,
-                                minWidth: 0,
-                            },
+                                "& .MuiStep-root": {
+                                    flex: 1,
+                                    minWidth: 0,
+                                },
 
-                            "& .MuiStepLabel-label": {
-                                fontSize: { xs: "10px", sm: "14px" },
-                                whiteSpace: "normal",
-                                textAlign: "center",
-                                wordBreak: "break-word",
-                                lineHeight: 1.2,
-                                color: "#05ab32",
-                            },
+                                "& .MuiStepLabel-label": {
+                                    fontSize: { xs: "10px", sm: "14px" },
+                                    whiteSpace: "normal",
+                                    textAlign: "center",
+                                    wordBreak: "break-word",
+                                    lineHeight: 1.2,
+                                    color: "#05ab32",
+                                },
 
-                            "& .MuiStepLabel-label.Mui-active": {
-                                color: "#05ab32",
-                                fontWeight: 600,
-                            },
+                                "& .MuiStepLabel-label.Mui-active": {
+                                    color: "#05ab32",
+                                    fontWeight: 600,
+                                },
 
-                            "& .MuiStepLabel-label.Mui-completed": {
-                                color: "#05ab32",
-                                fontWeight: 600,
-                            },
+                                "& .MuiStepLabel-label.Mui-completed": {
+                                    color: "#05ab32",
+                                    fontWeight: 600,
+                                },
 
-                            "& .MuiStepIcon-root": {
-                                fontSize: { xs: "1.3rem", sm: "1.5rem" },
-                                color: "#05ab32",
-                            },
+                                "& .MuiStepIcon-root": {
+                                    fontSize: { xs: "1.3rem", sm: "1.5rem" },
+                                    color: "#05ab32",
+                                },
 
-                            "& .MuiStepIcon-root.Mui-active": {
-                                color: "#05ab32",
-                            },
+                                "& .MuiStepIcon-root.Mui-active": {
+                                    color: "#05ab32",
+                                },
 
-                            "& .MuiStepIcon-root.Mui-completed": {
-                                color: "#05ab32",
-                            },
+                                "& .MuiStepIcon-root.Mui-completed": {
+                                    color: "#05ab32",
+                                },
 
-                            "& .MuiStepConnector-line": {
-                                borderColor: "#05ab32",
-                                borderTopWidth: 2,
-                            },
-                        }}
-                    >
-                        {steps.map((step) => (
-                            <Step key={step}>
-                                <StepLabel>{step}</StepLabel>
-                            </Step>
-                        ))}
-                    </Stepper>
-                )}
-
-                <Formik
-                    initialValues={initialValues}
-                    validationSchema={validationSchemas[activeStep]}
-                    onSubmit={(values, { setTouched }) => {
-                        if (isLastStep) {
-                            setSeeTemplates(true)
-                            nextStep()
-                            setTouched({})
-                        } else {
-                            setTouched({})
-                            nextStep()
-                        }
-                    }}
-                >
-                    {(formik) => (
+                                "& .MuiStepConnector-line": {
+                                    borderColor: "#05ab32",
+                                    borderTopWidth: 2,
+                                },
+                            }}
+                        >
+                            {steps.map((step) => (
+                                <Step key={step.id} onClick={() => { setActiveStep(step.id) }} sx={{ cursor: "pointer" }}>
+                                    <StepButton>{step.stepName}</StepButton>
+                                </Step>
+                            ))}
+                        </Stepper>
+                    )}
+                    <Box>
                         <>
                             {seeTemplates && (
                                 <Box
@@ -565,7 +670,7 @@ export default function BuilderClient() {
                                 <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", mt: 4 }}>
                                     <Button variant="outlined" sx={{ color: "#05ab32", borderColor: "#05ab32" }}
                                         onClick={() => {
-                                            setActiveStep(5)
+                                            setActiveStep(6)
                                             setSeeTemplates(false)
                                         }}>
                                         EDIT
@@ -586,17 +691,16 @@ export default function BuilderClient() {
                                 </Box>
                             )}
                             {!seeTemplates && (
-                                <form onSubmit={formik.handleSubmit}>
+                                <form onSubmit={formik.handleSubmit} className='w-[50%]'>
                                     <Card
                                         elevation={0}
                                         sx={{
                                             border: "1px solid #e5e7eb",
-                                            borderRadius: 4
+                                            borderRadius: 4,
                                         }}
                                     >
                                         <CardContent sx={{ p: 4 }}>
                                             {renderFields(formik)}
-
                                             <Box
                                                 sx={{
                                                     display: "flex",
@@ -619,12 +723,78 @@ export default function BuilderClient() {
 
                                             </Box>
                                         </CardContent>
+
                                     </Card>
+
                                 </form>
                             )}
                         </>
-                    )}
-                </Formik>
+                    </Box>
+                </Box>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mt: 2,
+                        mb: 2,
+                        overflowX: "hidden",
+                        ml: {
+                            xs: 0,
+                            lg: -20
+                        },
+                        width: "40%"
+                    }}
+                >
+                    <Box sx={{ display: "flex" }}>
+                        {/* Template One */}
+                        <Box sx={{
+                            textAlign: "center", overflowX: "auto", mr: 5,
+                            mb: {
+                                xs: 3,
+                                lg: 0,
+                            },
+                            ml: {
+                                xs: 10,
+                                lg: 0
+                            }
+                        }}>
+                            <FormControlLabel
+                                control={
+                                    <Radio
+                                        checked={selectedTemplate === "template1"}
+                                        onChange={() => setSelectedTemplate("template1")}
+                                        color="success"
+                                    />
+                                }
+                                label="Template One"
+                            />
+                        </Box>
+
+                        {/* Template Two */}
+                        <Box sx={{
+                            textAlign: "center",
+                            ml: {
+                                xs: 0,
+                                md: 5,
+                                lg: 5,
+                            }
+                        }}>
+                            <FormControlLabel
+                                control={
+                                    <Radio
+                                        checked={selectedTemplate === "template2"}
+                                        onChange={() => setSelectedTemplate("template2")}
+                                        color="success"
+                                    />
+                                }
+                                label="Template Two"
+                            />
+                        </Box>
+                    </Box>
+                    {selectedTemplate === "template1" ? <TemplateOne values={formik.values} height={850} width="80%" /> : <TemplateTwo values={formik.values} height={850} width="80%" />}
+                </Box>
             </Box>
         </Box >
     )

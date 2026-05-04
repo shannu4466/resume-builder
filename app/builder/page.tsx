@@ -2,7 +2,7 @@ import BuilderClient from './BuilderClient'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-    title: "Prime CV-Build resume"
+    title: "Prime CV-Build Resume"
 }
 
 export default function Builder() {
