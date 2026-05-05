@@ -9,31 +9,37 @@ const defaultValues = {
     email: "",
     phone: "",
     linkedin: "",
+
     tenthSchool: "",
     tenthPercentage: "",
+
     interCollege: "",
     interPercentage: "",
+    interType: "intermediate",
+
+    degreeType: "btech",
+    customDegree: "",
+    degreeBranch: "",
     degreeCollege: "",
     degreePercentage: "",
-    project1Name: "",
-    project1Desc: "",
-    project1Tech: "",
-    project2Name: "",
-    project2Desc: "",
-    project2Tech: "",
+
+    projects: [
+        { name: "", desc: "", tech: "" }
+    ],
+
     skills: "",
+    skillRatings: {},
+
     certificateName: "",
     certificateDesc: "",
+
     achievement: "",
     templatNumber: "",
-    resumeId: 0,
-    createdAt: "",
-    jobTitle: "",
-    companyName: "",
-    Location: "",
-    startDate: "",
-    endDate: "",
-    responsibilities: ""
+    resumeId: "",
+    createdAt: '',
+    workExperience: [
+        { jobTitle: "", companyName: "", Location: "", startDate: "", endDate: "", responsibilities: "" }
+    ],
 };
 const templatePageStyles = {
     width: "100%",

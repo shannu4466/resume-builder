@@ -1,3 +1,5 @@
+"use client"
+
 import EmailIcon from "@mui/icons-material/Email"
 import LinkedInIcon from "@mui/icons-material/LinkedIn"
 import PhoneIcon from "@mui/icons-material/Phone"
@@ -7,10 +9,16 @@ import {
     Grid,
     Paper,
     Stack,
-    Typography
+    Typography,
+    Tooltip
 } from "@mui/material"
 
-type ResumeValues = {
+import { usePathname } from "next/navigation"
+
+export type ResumeValues = {
+    createdAt: string | number | Date
+    resumeId: string | null | undefined
+    templatNumber: string | null | undefined
     name: string
     email: string
     phone: string
@@ -19,30 +27,26 @@ type ResumeValues = {
     tenthPercentage: number | string
     interCollege: string
     interPercentage: number | string
+    interType?: string
+    degreeBranch?: string
+    degreeType?: string
+    customDegree?: string
     degreeCollege: string
     degreePercentage: number | string
-    project1Name: string
-    project1Desc: string
-    project1Tech: string
-    project2Name: string
-    project2Desc: string
-    project2Tech: string
+    projects: { name: string; desc: string; tech: string }[]
     skills: string
+    skillRatings: Record<string, number>
     certificateName: string
     certificateDesc: string
     achievement: string
-    jobTitle?: string
-    companyName?: string
-    Location?: string
-    startDate?: Date | string | number
-    endDate?: Date | string | number
-    responsibilities?: string
+    workExperience: { jobTitle: string; companyName: string; Location: string; startDate: string; endDate: string; responsibilities: string }[]
 }
 
 type Props = {
     values: ResumeValues
     height?: number | string
     width?: number | string
+    submit?: boolean
 }
 
 const TEAL = "#0097a7"
@@ -54,7 +58,7 @@ const dummySkills = [
     "Skill - 2",
     "Skill - 3",
     "Skill - 4",
-    "So on ..."
+    "many more ..."
 ];
 
 const dummyCertificate = {
@@ -71,8 +75,18 @@ const dummyExperience = {
     responsibilities: "Your Responsibilites (key responsibilities)"
 }
 
+const dummyProjects = [
+    {
+        name: "Project 1 Title",
+        desc: "Project 1 Description",
+        tech: "Project 1 Tech Stacks"
+    }
+]
 
-export default function TemplateOne({ values, height, width }: Props) {
+export default function TemplateOne({ values, height, width, submit }: Props) {
+    const path = usePathname()
+    const isHistoryTab = (path === "/history")
+
     const scale = width ? (typeof width === 'number' ? width / 900 : 1) : 1;
 
     const skillList = values.skills
@@ -85,7 +99,29 @@ export default function TemplateOne({ values, height, width }: Props) {
 
     const skillsToShow = skillList && skillList.length > 0 ? skillList : dummySkills;
 
-    const exp = values.jobTitle ? values : dummyExperience;
+    const workExp = values.workExperience || [];
+    const isExperienceEmpty = workExp.length === 0 || values.workExperience.every(exp =>
+        !exp.jobTitle &&
+        !exp.companyName &&
+        !exp.Location &&
+        !exp.startDate &&
+        !exp.endDate &&
+        !exp.responsibilities
+    )
+
+    const experienceToRender = (isExperienceEmpty && !isHistoryTab)
+        ? [dummyExperience]
+        : values.workExperience
+
+    const projects = values.projects || [];
+    const isProjectsEmpty =
+        projects.length === 0 ||
+        projects.every(p =>
+            !p.name &&
+            !p.desc &&
+            !p.tech
+        )
+    const projectsToRender = (isProjectsEmpty && !isHistoryTab) ? dummyProjects : projects;
 
     return (
         <Paper
@@ -93,15 +129,19 @@ export default function TemplateOne({ values, height, width }: Props) {
             sx={{
                 width: width || "100%",
                 maxWidth: width || 900,
-                height: height || "auto",
+                minHeight: height || "2000px",
                 mx: "auto",
                 borderRadius: 2,
-                overflow: "hidden",
                 bgcolor: "#fff",
                 fontFamily: "'Georgia', serif",
             }}
         >
-            <Grid container sx={{ minHeight: height || 600, minWidth: width ? 0 : 550, flexWrap: "nowrap" }}>
+            <Grid container sx={{
+                minHeight: height || "100%",
+                minWidth: width ? 0 : 550,
+                flexWrap: "nowrap",
+                alignItems: "stretch",
+            }}>
                 {/* LEFT SIDEBAR */}
                 <Grid
                     size={{ xs: 4.5 }}
@@ -163,26 +203,28 @@ export default function TemplateOne({ values, height, width }: Props) {
                             text={values.email || "your@email.com"}
                             scale={scale}
                         />
-                        <ContactRow
-                            icon={<LinkedInIcon sx={{ fontSize: 14 * scale, color: TEAL }} />}
-                            text={
-                                <a
-                                    href={
-                                        values.linkedin
-                                            ? values.linkedin.startsWith("http")
-                                                ? values.linkedin
-                                                : `https://${values.linkedin}`
-                                            : "https://linkedin.com/in/your-profile"
-                                    }
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ color: "#0a66c2", textDecoration: "none" }}
-                                >
-                                    {values.linkedin || "linkedin.com/in/your-profile"}
-                                </a>
-                            }
-                            scale={scale}
-                        />
+                        {(values.linkedin || !submit) && (
+                            <ContactRow
+                                icon={<LinkedInIcon sx={{ fontSize: 14 * scale, color: TEAL }} />}
+                                text={
+                                    <a
+                                        href={
+                                            values.linkedin
+                                                ? values.linkedin.startsWith("http")
+                                                    ? values.linkedin
+                                                    : `https://${values.linkedin}`
+                                                : "https://linkedin.com/in/your-profile"
+                                        }
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ color: "#0a66c2", textDecoration: "none" }}
+                                    >
+                                        {values.linkedin || "linkedin.com/in/your-profile"}
+                                    </a>
+                                }
+                                scale={scale}
+                            />
+                        )}
                     </Box>
 
                     <Divider sx={{ mx: 2, my: 1.5, borderColor: "#cde3e6" }} />
@@ -191,54 +233,91 @@ export default function TemplateOne({ values, height, width }: Props) {
                     <Box sx={{ px: 2.2, pb: 1 }}>
                         <SidebarSection title="SKILLS" teal={TEAL} scale={scale} />
                         <Stack spacing={0.4} sx={{ mt: 1 }}>
-                            {skillsToShow.map((skill, i) => (
-                                <Stack key={i} direction="row" sx={{ alignItems: "center" }} spacing={0.8}>
-                                    <Box
-                                        sx={{
-                                            mt: "6px",
-                                            width: 5,
-                                            height: 5,
-                                            borderRadius: "50%",
-                                            bgcolor: TEAL,
-                                            flexShrink: 0,
-                                        }}
-                                    />
-                                    <Typography sx={{ fontSize: 11.5 * scale, color: "#334155", lineHeight: 1.8 }}>
-                                        {skill}
-                                    </Typography>
-                                </Stack>
-                            ))}
+                            {skillsToShow.map((skill, i) => {
+                                const trimmedSkill = skill.trim();
+                                const rating = values.skillRatings?.[trimmedSkill] ?? 0;
+                                return (
+                                    <Stack key={i} direction="row" sx={{ alignItems: "center" }} spacing={0.8}>
+                                        <Box
+                                            sx={{
+                                                mt: "6px",
+                                                width: 5,
+                                                height: 5,
+                                                borderRadius: "50%",
+                                                bgcolor: TEAL,
+                                                flexShrink: 0,
+                                            }}
+                                        />
+                                        <Typography
+                                            sx={{
+                                                fontSize: 11.5 * scale,
+                                                color: "#334155",
+                                                lineHeight: 1.8,
+                                                minWidth: 80 * scale,
+                                            }}
+                                        >
+                                            {trimmedSkill}
+                                        </Typography>
+                                        {/* Line Rating Bar with Hover */}
+                                        <Tooltip title={`Rating: ${rating}/10`} arrow>
+                                            <Box
+                                                sx={{
+                                                    position: "relative",
+                                                    width: 100 * scale,
+                                                    height: 6 * scale,
+                                                    bgcolor: "#cbd5e1",
+                                                    borderRadius: 5,
+                                                    overflow: "hidden",
+                                                    cursor: "pointer",
+                                                    mt: "4px",
+                                                }}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        width: `${rating * 10}%`,
+                                                        height: "100%",
+                                                        bgcolor: TEAL,
+                                                        transition: "width 0.3s ease",
+                                                    }}
+                                                />
+                                            </Box>
+                                        </Tooltip>
+                                    </Stack>
+                                );
+                            })}
                         </Stack>
                     </Box>
 
                     <Divider sx={{ mx: 2, my: 1.5, borderColor: "#cde3e6" }} />
 
                     {/* Certificate */}
-                    <Box sx={{ px: 2.2, pb: 2 }}>
-                        <SidebarSection title="CERTIFICATE" teal={TEAL} scale={scale} />
-                        <Typography
-                            sx={{
-                                mt: 1,
-                                fontSize: 12.5 * scale,
-                                fontWeight: 700,
-                                color: values.certificateName ? "#1a2332" : "#94a3b8",
-                                lineHeight: 1.7,
-                            }}
-                        >
-                            {values.certificateName || dummyCertificate.name}
-                        </Typography>
+                    {((values.certificateName !== "" || values.certificateDesc !== "") || !submit && !isHistoryTab) && (
+                        <Box sx={{ px: 2.2, pb: 2 }}>
+                            <SidebarSection title="CERTIFICATE" teal={TEAL} scale={scale} />
+                            <Typography
+                                sx={{
+                                    mt: 1,
+                                    fontSize: 12.5 * scale,
+                                    fontWeight: 700,
+                                    color: values.certificateName ? "#1a2332" : "#94a3b8",
+                                    lineHeight: 1.7,
+                                }}
+                            >
+                                {values.certificateName || dummyCertificate.name}
+                            </Typography>
 
-                        <Typography
-                            sx={{
-                                mt: 0.5,
-                                fontSize: 11.5 * scale,
-                                color: values.certificateDesc ? "#64748b" : "#94a3b8",
-                                lineHeight: 1.8,
-                            }}
-                        >
-                            {values.certificateDesc || dummyCertificate.desc}
-                        </Typography>
-                    </Box>
+                            <Typography
+                                sx={{
+                                    mt: 0.5,
+                                    fontSize: 11.5 * scale,
+                                    color: values.certificateDesc ? "#64748b" : "#94a3b8",
+                                    lineHeight: 1.8,
+                                }}
+                            >
+                                {values.certificateDesc || dummyCertificate.desc}
+                            </Typography>
+                        </Box>
+                    )}
                 </Grid>
 
                 {/* RIGHT MAIN */}
@@ -248,14 +327,17 @@ export default function TemplateOne({ values, height, width }: Props) {
                         display: "flex",
                         flexDirection: "column",
                         p: 0,
+                        minHeight: height || 600,
+                        minWidth: width ? 0 : 550,
+                        flexWrap: "nowrap",
                     }}
                 >
                     {/* Header */}
                     <Box sx={{ bgcolor: DARK, px: 2, py: 3.5, height: "96px" }}>
                         <Typography
                             sx={{
-                                fontSize: `${2.1 * scale}rem`,
-                                fontWeight: 700,
+                                fontSize: `${1.9 * scale}rem`,
+                                fontWeight: 600,
                                 color: TEAL,
                                 fontFamily: "'Georgia', serif",
                                 letterSpacing: 0.5,
@@ -269,72 +351,77 @@ export default function TemplateOne({ values, height, width }: Props) {
                     {/* Body */}
                     <Box sx={{ px: 3.5, py: 2.5, flex: 1 }}>
                         {/* Experience */}
-                        <MainSection title="EXPERIENCE" teal={TEAL} scale={scale} />
-                        <Box sx={{ mb: 2.5 }}>
-                            <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
-                                <Typography sx={{ fontSize: 14 * scale, fontWeight: 700, color: DARK }}>
-                                    {exp.jobTitle}
-                                </Typography>
-                                <Typography sx={{ fontSize: 11 * scale, color: "#64748b", fontStyle: "italic" }}>
-                                    {exp.startDate ? new Date(exp.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : ""} -
-                                    {exp.endDate ? new Date(exp.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : " Present"}
-                                </Typography>
-                            </Stack>
-                            <Typography sx={{ fontSize: 12.5 * scale, fontWeight: 600, color: TEAL, mb: 0.5 }}>
-                                {exp.companyName} | {exp.Location}
-                            </Typography>
-                            <Typography sx={{ fontSize: 12 * scale, color: "#475569", lineHeight: 1.7, whiteSpace: "pre-line" }}>
-                                {exp.responsibilities}
-                            </Typography>
-                        </Box>
-                        <Divider sx={{ my: 1.8, borderColor: "#e2e8f0" }} />
+                        {(!isExperienceEmpty || !submit && !isHistoryTab) && (
+                            <Box>
+                                <MainSection title="EXPERIENCE" teal={TEAL} scale={scale} />
+                                {experienceToRender.map((eachExp, index) => (
+                                    <Box sx={{ mb: 2.5 }} key={index}>
+                                        <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                                            <Typography sx={{ fontSize: 14 * scale, fontWeight: 700, color: DARK }}>
+                                                {eachExp.jobTitle}
+                                            </Typography>
+                                            <Typography sx={{ fontSize: 11 * scale, color: "#64748b", fontStyle: "italic" }}>
+                                                {eachExp.startDate ? new Date(eachExp.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : ""} -
+                                                {eachExp.endDate ? new Date(eachExp.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : " Present"}
+                                            </Typography>
+                                        </Stack>
+                                        <Typography sx={{ fontSize: 12.5 * scale, fontWeight: 600, color: TEAL, mb: 0.5 }}>
+                                            {eachExp.companyName} | {eachExp.Location}
+                                        </Typography>
+                                        <Typography sx={{ fontSize: 12 * scale, color: "#475569", lineHeight: 1.7, whiteSpace: "pre-line" }}>
+                                            {eachExp.responsibilities}
+                                        </Typography>
+                                    </Box>
+                                ))}
+                                <Divider sx={{ my: 1.8, borderColor: "#e2e8f0" }} />
+                            </Box>
+                        )}
 
                         {/* Projects */}
-                        <MainSection title="PROJECTS" teal={TEAL} scale={scale} />
-                        <ProjectCard
-                            name={values.project1Name || "Project 1 Title"}
-                            desc={values.project1Desc || "Project 1 Description"}
-                            tech={values.project1Tech || "Project 1 Tech Stacks"}
-                            teal={TEAL}
-                            dark={DARK}
-                            scale={scale}
-                        />
-                        <ProjectCard
-                            name={values.project2Name || "Project 2 Title"}
-                            desc={values.project2Desc || "Project 2 Description"}
-                            tech={values.project2Tech || "Project 2 Tech Stacks"}
-                            teal={TEAL}
-                            dark={DARK}
-                            scale={scale}
-                        />
+                        {(!isProjectsEmpty || !submit && !isHistoryTab) && (
+                            <Box>
+                                <MainSection title="PROJECTS" teal={TEAL} scale={scale} />
+                                {projectsToRender.slice(0, 3).map((proj, index) => (
+                                    <ProjectCard
+                                        key={index}
+                                        name={proj.name || `Project ${index + 1} Title`}
+                                        desc={proj.desc || `Project ${index + 1} Description`}
+                                        tech={proj.tech || `Project ${index + 1} Tech Stacks`}
+                                        teal={TEAL}
+                                        dark={DARK}
+                                        scale={scale}
+                                    />
+                                ))}
 
-                        <Divider sx={{ my: 1.8, borderColor: "#e2e8f0" }} />
+                                <Divider sx={{ my: 1.8, borderColor: "#e2e8f0" }} />
+                            </Box>
+                        )}
 
                         {/* Education */}
                         <MainSection title="EDUCATION" teal={TEAL} scale={scale} />
                         <EduRow
-                            degree="B.Tech – CSE"
+                            degree={`${values.degreeType?.toLocaleUpperCase()} - ${values.degreeBranch || "Branch"}`}
                             college={values.degreeCollege || "Degree college name"}
                             year="2022 – 2026"
-                            score={`${values.degreePercentage || "Percentage "}%`}
+                            score={`Percentage: ${values.degreePercentage || " "}%`}
                             teal={TEAL}
                             dark={DARK}
                             scale={scale} accent={""}
                         />
                         <EduRow
-                            degree="Intermediate"
+                            degree={`${values.interType?.toLocaleUpperCase()}`}
                             college={values.interCollege || "Intermediate/Diploma college name"}
                             year="2020 – 2022"
-                            score={`${values.interPercentage || "Percentage "}%`}
+                            score={`Percentage: ${values.interPercentage || " "}%`}
                             teal={TEAL}
                             dark={DARK}
                             scale={scale} accent={""}
                         />
                         <EduRow
-                            degree="Secondary Education"
+                            degree="SECONDARY EDUCATION"
                             college={values.tenthSchool || "10th school name"}
                             year="2019 – 2020"
-                            score={`${values.tenthPercentage || "Percentage "}%`}
+                            score={`Percentage: ${values.tenthPercentage || " "}%`}
                             teal={TEAL}
                             dark={DARK}
                             scale={scale} accent={""}
@@ -343,22 +430,26 @@ export default function TemplateOne({ values, height, width }: Props) {
                         <Divider sx={{ my: 1.8, borderColor: "#e2e8f0" }} />
 
                         {/* Achievement */}
-                        <MainSection title="ACHIEVEMENT" teal={TEAL} scale={scale} />
-                        <Stack direction="row" sx={{ alignItems: "center" }} spacing={1}>
-                            <Box
-                                sx={{
-                                    mt: "7px",
-                                    width: 5,
-                                    height: 5,
-                                    borderRadius: "50%",
-                                    bgcolor: "#94a3b8",
-                                    flexShrink: 0,
-                                }}
-                            />
-                            <Typography sx={{ fontSize: 12 * scale, color: "#475569", lineHeight: 1.8 }}>
-                                {values.achievement || "Any achivements in your life"}
-                            </Typography>
-                        </Stack>
+                        {(values.achievement !== "" || !submit && !isHistoryTab) && (
+                            <Box>
+                                <MainSection title="ACHIEVEMENT" teal={TEAL} scale={scale} />
+                                <Stack direction="row" sx={{ alignItems: "center" }} spacing={1}>
+                                    <Box
+                                        sx={{
+                                            mt: "7px",
+                                            width: 5,
+                                            height: 5,
+                                            borderRadius: "50%",
+                                            bgcolor: "#94a3b8",
+                                            flexShrink: 0,
+                                        }}
+                                    />
+                                    <Typography sx={{ fontSize: 12 * scale, color: "#475569", lineHeight: 1.8 }}>
+                                        {values.achievement || "Any achivements in your life"}
+                                    </Typography>
+                                </Stack>
+                            </Box>
+                        )}
                     </Box>
                 </Grid>
             </Grid>

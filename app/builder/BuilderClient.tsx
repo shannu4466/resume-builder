@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -10,29 +11,31 @@ import {
     Chip,
     FormControlLabel,
     Grid,
+    MenuItem,
     Radio,
     Step,
     StepButton,
     Stepper,
     TextField,
-    Typography
+    Typography,
 } from "@mui/material";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { FormikProps, useFormik } from "formik";
+import { FormikProps, getIn, setIn, useFormik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
 import Navbar from "../../components/Navbar";
 
 import { useRouter } from 'next/navigation';
 
-import TemplateOne from "../templates/TemplateOne";
-import TemplateTwo from "../templates/TemplateTwo";
+import TemplateOne, { ResumeValues as TemplateOneValues } from "../templates/TemplateOne";
+import TemplateTwo, { ResumeValues as TemplateTwoValues } from "../templates/TemplateTwo";
 
 import dayjs from 'dayjs';
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import React from 'react';
 
 type ResumeValues = {
     name: string
@@ -43,27 +46,22 @@ type ResumeValues = {
     tenthPercentage: number | string
     interCollege: string
     interPercentage: number | string
+    interType?: string
+    degreeBranch?: string
+    degreeType?: string
+    customDegree?: string
     degreeCollege: string
     degreePercentage: number | string
-    project1Name: string
-    project1Desc: string
-    project1Tech: string
-    project2Name: string
-    project2Desc: string
-    project2Tech: string
+    projects: { name: string; desc: string; tech: string }[]
     skills: string
+    skillRatings: Record<string, number>
     certificateName: string
     certificateDesc: string
     achievement: string
-    jobTitle?: string
-    companyName?: string
-    Location?: string
-    startDate?: Date | string | number
-    endDate?: Date | string | number
-    responsibilities?: string
-    templatNumber?: string
-    resumeId?: number
-    createdAt?: string
+    workExperience: { jobTitle: string; companyName: string; Location: string; startDate: string; endDate: string; responsibilities: string }[]
+    templatNumber: string | null | undefined
+    resumeId: string | null | undefined
+    createdAt: string | number | Date
 }
 
 const steps = [
@@ -97,6 +95,93 @@ const skillOptions = [
     "Tailwind CSS"
 ]
 
+// const initialValues: ResumeValues = {
+//     name: "Shanmukha Rao",
+//     email: "shannuthangudu@example.com",
+//     phone: "9876543210",
+//     linkedin: "https://linkedin.com/in/shannuthangudu",
+
+//     tenthSchool: "Sri Chaitanya High School",
+//     tenthPercentage: "92",
+
+//     interCollege: "Narayana Junior College",
+//     interPercentage: "94",
+//     interType: "intermediate",
+
+//     degreeType: "btech",
+//     customDegree: "",
+//     degreeBranch: "Computer Science and Engineering",
+//     degreeCollege: "Sri vasavi engineering college",
+//     degreePercentage: "87",
+
+//     projects: [
+//         {
+//             name: "E-commerce Web App",
+//             desc: "Developed a full-stack e-commerce application with user authentication, cart, and payment integration.",
+//             tech: "React, Node.js, Express, MongoDB"
+//         },
+//         {
+//             name: "Chat Application",
+//             desc: "Built a real-time chat app supporting multiple users and rooms with WebSocket integration.",
+//             tech: "React, Socket.io, Node.js"
+//         },
+//         {
+//             name: "Resume Builder",
+//             desc: "Created a dynamic resume builder allowing users to generate and download resumes with templates.",
+//             tech: "React, TypeScript, Tailwind CSS"
+//         }
+//     ],
+
+//     skills: "Python, JavaScript, Java, TypeScript, React, Node.js, MongoDB, SQL",
+//     skillRatings: {
+//         Python: 4,
+//         JavaScript: 5,
+//         Java: 4,
+//         TypeScript: 4,
+//         React: 5,
+//         "Node.js": 4,
+//         MongoDB: 4,
+//         SQL: 3
+//     },
+
+//     certificateName: "Full Stack Web Development",
+//     certificateDesc: "Completed a comprehensive course covering MERN stack development with real-world projects.",
+
+//     achievement: "Secured 2nd place in a national-level hackathon for developing an AI-based recommendation system.",
+
+//     templatNumber: "1",
+//     resumeId: "RES123456",
+//     createdAt: "2026-05-05",
+
+//     workExperience: [
+//         {
+//             jobTitle: "Frontend Developer Intern",
+//             companyName: "Tech Solutions Pvt Ltd",
+//             Location: "Hyderabad",
+//             startDate: "2025-01-01",
+//             endDate: "2025-04-30",
+//             responsibilities: "Developed responsive UI components using React and improved page performance by 20%."
+//         },
+//         {
+//             jobTitle: "Backend Developer Intern",
+//             companyName: "CodeCraft Labs",
+//             Location: "Bangalore",
+//             startDate: "2024-06-01",
+//             endDate: "2024-08-31",
+//             responsibilities: "Built REST APIs and integrated MongoDB for scalable backend services."
+//         },
+//         {
+//             jobTitle: "Software Intern",
+//             companyName: "InnovateX",
+//             Location: "Remote",
+//             startDate: "2023-12-01",
+//             endDate: "2024-02-28",
+//             responsibilities: "Assisted in debugging, testing, and deploying web applications."
+//         }
+//     ],
+// };
+
+
 const initialValues: ResumeValues = {
     name: "",
     email: "",
@@ -108,72 +193,140 @@ const initialValues: ResumeValues = {
 
     interCollege: "",
     interPercentage: "",
+    interType: "intermediate",
 
+    degreeType: "btech",
+    customDegree: "",
+    degreeBranch: "",
     degreeCollege: "",
     degreePercentage: "",
 
-    project1Name: "",
-    project1Desc: "",
-    project1Tech: "",
-
-    project2Name: "",
-    project2Desc: "",
-    project2Tech: "",
+    projects: [
+        { name: "", desc: "", tech: "" }
+    ],
 
     skills: "",
+    skillRatings: {},
 
     certificateName: "",
     certificateDesc: "",
 
     achievement: "",
     templatNumber: "",
-    resumeId: 0,
+    resumeId: "",
     createdAt: '',
-    jobTitle: '',
-    companyName: '',
-    Location: '',
-    startDate: '',
-    endDate: '',
-    responsibilities: ''
+    workExperience: [
+        { jobTitle: "", companyName: "", Location: "", startDate: "", endDate: "", responsibilities: "" }
+    ],
 };
 
 const validationSchemas = [
     Yup.object({
-        name: Yup.string(),
-        email: Yup.string().email("Invalid email"),
-        phone: Yup.string().matches(/^[0-9]{10}$/, "Phone number must be 10 digits"),
+        name: Yup.string().required("Required"),
+        email: Yup.string().email("Invalid email").required("Required"),
+        phone: Yup.string().matches(/^[0-9]{10}$/, "Phone number must be 10 digits").required("Required"),
         linkedin: Yup.string().url("Enter a valid Linkedin Url")
     }),
 
     Yup.object({
-        tenthSchool: Yup.string(),
-        tenthPercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100"),
-        interCollege: Yup.string(),
-        interPercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100"),
-        degreeCollege: Yup.string(),
-        degreePercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100"),
+        tenthSchool: Yup.string().required("Required"),
+        tenthPercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100").required("Required"),
+
+        interType: Yup.string().required("Required"),
+        interCollege: Yup.string().required("Required"),
+        interPercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100").required("Required"),
+
+        degreeType: Yup.string().required("Required"),
+        customDegree: Yup.string().when("degreeType", {
+            is: "other",
+            then: (schema) => schema.required("Please specify your degree"),
+            otherwise: (schema) => schema.notRequired()
+        }),
+        degreeCollege: Yup.string().required("Required"),
+        degreeBranch: Yup.string().required("Required"),
+        degreePercentage: Yup.number().min(0, "Percentage should not be less than 0").max(100, "Percentage should not be more than 100").required("Required"),
     }),
 
     Yup.object({
-        project1Name: Yup.string(),
-        project1Desc: Yup.string(),
-        project1Tech: Yup.string(),
-        project2Name: Yup.string(),
-        project2Desc: Yup.string(),
-        project2Tech: Yup.string()
+        projects: Yup.array()
+            .of(
+                Yup.object({
+                    name: Yup.string(),
+                    desc: Yup.string(),
+                    tech: Yup.string(),
+                })
+            )
+            .max(3, "Maximum 3 projects allowed"),
     }),
 
     Yup.object({
-        skills: Yup.string()
+        skills: Yup.string().required("Required"),
+        skillRatings: Yup.object().test(
+            "all-skills-rated",
+            "Each skill must have a rating",
+            function (value: Record<string, any> | undefined) {
+                const { skills } = this.parent;
+                if (!skills) return true;
+                const skillList = skills
+                    .split(",")
+                    .map((s: any) => s.trim())
+                    .filter(Boolean);
+                for (const skill of skillList) {
+                    const rating = value?.[skill];
+                    if (rating === undefined || rating === null || rating === "") {
+                        return this.createError({
+                            path: `skillRatings.${skill}`,
+                            message: "Required",
+                        });
+                    }
+                    if (rating < 1 || rating > 10) {
+                        return this.createError({
+                            path: `skillRatings.${skill}`,
+                            message: "Must be between 1 and 10",
+                        });
+                    }
+                }
+                return true;
+            }
+        ),
     }),
 
     Yup.object({
-        jobTitle: Yup.string(),
-        companyName: Yup.string(),
-        Location: Yup.string(),
-        startDate: Yup.string(),
-        endDate: Yup.string(),
-        responsibilities: Yup.string()
+        workExperience: Yup.array().of(
+            Yup.object({
+                jobTitle: Yup.string(),
+                companyName: Yup.string(),
+                Location: Yup.string(),
+
+                startDate: Yup.date()
+                    .nullable()
+                    .transform((value, originalValue) =>
+                        originalValue === "" ? null : value 
+                    )
+                    .max(new Date(), "Start date cannot be in the future"),
+
+                endDate: Yup.date()
+                    .nullable()
+                    .transform((value, originalValue) =>
+                        originalValue === "" ? null : value 
+                    )
+                    .test(
+                        "is-after-start",
+                        "End date must be later than start date",
+                        function (value) {
+                            const { startDate } = this.parent;
+
+                            if (!startDate || !value) return true;
+
+                            return dayjs(value)
+                                .startOf("day")
+                                .isAfter(dayjs(startDate).startOf("day"));
+                        }
+                    ),
+
+                responsibilities: Yup.string(),
+            })
+        ),
     }),
 
     Yup.object({
@@ -198,35 +351,85 @@ export default function BuilderClient() {
 
     const router = useRouter()
 
+    const fullValidationSchema = Yup.object().shape(
+        validationSchemas.reduce((acc, schema) => {
+            return { ...acc, ...(schema as any).fields }
+        }, {})
+    )
+
     const formik = useFormik({
         initialValues,
         validationSchema: validationSchemas[activeStep],
-        onSubmit: (values, { setTouched }) => {
+        onSubmit: async (values, { setTouched, setErrors }) => {
             if (isLastStep) {
-                setSeeTemplates(true)
-                nextStep()
-                setTouched({})
+                try {
+                    await fullValidationSchema.validate(values, { abortEarly: false });
+                    setSeeTemplates(true);
+                    nextStep();
+                    setTouched({});
+                } catch (err: unknown) {
+                    let errors: any = {}
+                    let touched: any = {}
+                    if (err instanceof Yup.ValidationError) {
+                        err.inner.forEach((e: Yup.ValidationError) => {
+                            if (e.path) {
+                                errors = setIn(errors, e.path, e.message)
+                                touched = setIn(touched, e.path, true)
+                            }
+                        })
+                        setErrors(errors);
+                        setTouched(touched);
+                        const firstErrorField =
+                            err.inner && err.inner.length > 0
+                                ? err.inner[0].path
+                                : err.path;
+
+                        if (firstErrorField) {
+                            const rootField = firstErrorField.split(/[\[.]/)[0];
+                            const stepIndex = validationSchemas.findIndex((schema) =>
+                                Object.prototype.hasOwnProperty.call(schema.fields, rootField)
+                            );
+
+                            if (stepIndex !== -1) {
+                                setActiveStep(stepIndex)
+                                setTimeout(() => {
+                                    formik.validateForm();
+                                }, 0);
+                            }
+                        }
+                    }
+
+                    return;
+                }
             } else {
-                setTouched({})
-                nextStep()
+                setTouched({});
+                nextStep();
             }
-        }
+        },
     })
 
-    console.log(formik)
-
     const renderFields = (formik: FormikProps<ResumeValues>) => {
-        const { values, handleChange, handleBlur, touched, errors, setFieldValue } = formik
+        const { values, handleChange, handleBlur, touched, errors, setFieldValue, setFieldTouched } = formik
 
-        const fieldProps = (name: keyof ResumeValues, label: string) => ({
+        const fieldProps = (name: string, label: string) => ({
             fullWidth: true,
             name,
             label,
-            value: values[name],
+            value: name.includes('[')
+                ? name.split(/[\[\].]+/).filter(Boolean).reduce((obj: any, key) => obj?.[key], values)
+                : (values as any)[name],
             onChange: handleChange,
             onBlur: handleBlur,
-            error: Boolean(touched[name] && errors[name]),
-            helperText: touched[name] ? errors[name] : "",
+            error: Boolean(
+                name.includes('[')
+                    ? name.split(/[\[\].]+/).filter(Boolean).reduce((obj: any, key) => obj?.[key], touched) &&
+                    name.split(/[\[\].]+/).filter(Boolean).reduce((obj: any, key) => obj?.[key], errors)
+                    : (touched as any)[name] && (errors as any)[name]
+            ),
+            helperText: (name.includes('[')
+                ? name.split(/[\[\].]+/).filter(Boolean).reduce((obj: any, key) => obj?.[key], touched) &&
+                name.split(/[\[\].]+/).filter(Boolean).reduce((obj: any, key) => obj?.[key], errors)
+                : (touched as any)[name] ? (errors as any)[name] : "") as string,
             color: "success" as const
         })
 
@@ -267,6 +470,11 @@ export default function BuilderClient() {
             case 1:
                 return (
                     <Grid container spacing={3}>
+                        {/* 10th Details */}
+                        <Grid size={{ xs: 12 }}>
+                            <Typography variant="h6">10th Details</Typography>
+                        </Grid>
+
                         <Grid size={{ xs: 12, md: 8 }}>
                             <TextField {...fieldProps("tenthSchool", "10th School Name")} />
                         </Grid>
@@ -275,20 +483,77 @@ export default function BuilderClient() {
                             <TextField {...fieldProps("tenthPercentage", "10th Percentage")} />
                         </Grid>
 
-                        <Grid size={{ xs: 12, md: 8 }}>
-                            <TextField {...fieldProps("interCollege", "Intermediate/Diploma College Name")} />
+
+                        {/* Intermediate / Diploma */}
+                        <Grid size={{ xs: 12 }}>
+                            <Typography variant="h6">Intermediate / Diploma</Typography>
                         </Grid>
 
                         <Grid size={{ xs: 12, md: 4 }}>
-                            <TextField {...fieldProps("interPercentage", "Intermediate/Diploma Percentage")} />
-                        </Grid>
-
-                        <Grid size={{ xs: 12, md: 8 }}>
-                            <TextField {...fieldProps("degreeCollege", "Degree College Name")} />
+                            <TextField
+                                select
+                                {...fieldProps("interType", "Select Type")}
+                            >
+                                <MenuItem value="intermediate">Intermediate</MenuItem>
+                                <MenuItem value="diploma">Diploma</MenuItem>
+                            </TextField>
                         </Grid>
 
                         <Grid size={{ xs: 12, md: 4 }}>
-                            <TextField {...fieldProps("degreePercentage", "Degree Percentage")} />
+                            <TextField
+                                {...fieldProps("interCollege", "College Name")}
+                            />
+                        </Grid>
+
+                        <Grid size={{ xs: 12, md: 4 }}>
+                            <TextField
+                                {...fieldProps("interPercentage", "Percentage")}
+                            />
+                        </Grid>
+
+                        {/* Degree Details */}
+                        <Grid container spacing={3}>
+                            <Grid size={{ xs: 12 }}>
+                                <Typography variant="h6">Degree Details</Typography>
+                            </Grid>
+
+                            {/* Degree Type */}
+                            <Grid size={{ xs: 12, md: 3 }}>
+                                <TextField
+                                    select
+                                    {...fieldProps("degreeType", "Degree Type")}
+                                >
+                                    <MenuItem value="btech">B.Tech</MenuItem>
+                                    <MenuItem value="bsc">B.Sc</MenuItem>
+                                    <MenuItem value="bcom">B.Com</MenuItem>
+                                    <MenuItem value="ba">B.A</MenuItem>
+                                    <MenuItem value="accounting">Accounting</MenuItem>
+                                    <MenuItem value="other">Other</MenuItem>
+                                </TextField>
+                            </Grid>
+
+                            {values.degreeType === "other" && (
+                                <Grid size={{ xs: 12, md: 3 }}>
+                                    <TextField
+                                        {...fieldProps("customDegree", "Enter Degree Name")}
+                                    />
+                                </Grid>
+                            )}
+                            <Grid size={{ xs: 12, md: 3 }}>
+                                <TextField
+                                    {...fieldProps("degreeCollege", "College Name")}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, md: 3 }}>
+                                <TextField
+                                    {...fieldProps("degreeBranch", "Branch / Department")}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, md: 3 }}>
+                                <TextField
+                                    {...fieldProps("degreePercentage", "Percentage")}
+                                />
+                            </Grid>
                         </Grid>
                     </Grid>
                 )
@@ -296,45 +561,63 @@ export default function BuilderClient() {
             case 2:
                 return (
                     <Grid container spacing={3}>
-                        <Grid size={{ xs: 12 }}>
-                            <Typography variant="h6">Project 1</Typography>
-                        </Grid>
+                        {(values.projects ?? []).map((project, index) => (
+                            <React.Fragment key={index}>
+                                <Grid size={{ xs: 12 }}>
+                                    <Typography variant="h6">Project {index + 1}</Typography>
+                                </Grid>
 
-                        <Grid size={{ xs: 12 }}>
-                            <TextField {...fieldProps("project1Name", "Project Name")} />
-                        </Grid>
+                                <Grid size={{ xs: 12 }}>
+                                    <TextField {...fieldProps(`projects[${index}].name`, "Project Name")} />
+                                </Grid>
 
-                        <Grid size={{ xs: 12 }}>
-                            <TextField
-                                {...fieldProps("project1Desc", "Project Description")}
-                                multiline
-                                rows={3}
-                            />
-                        </Grid>
+                                <Grid size={{ xs: 12 }}>
+                                    <TextField
+                                        {...fieldProps(`projects[${index}].desc`, "Project Description")}
+                                        multiline
+                                        rows={3}
+                                    />
+                                </Grid>
 
-                        <Grid size={{ xs: 12 }}>
-                            <TextField {...fieldProps("project1Tech", "Technologies Used (comma seperated)")} />
-                        </Grid>
+                                <Grid size={{ xs: 12 }}>
+                                    <TextField
+                                        {...fieldProps(`projects[${index}].tech`, "Technologies Used (comma separated)")}
+                                    />
+                                </Grid>
 
-                        <Grid size={{ xs: 12 }}>
-                            <Typography variant="h6">Project 2</Typography>
-                        </Grid>
+                                {values.projects.length > 1 && (
+                                    <Grid size={{ xs: 12 }}>
+                                        <Button
+                                            color="error"
+                                            variant="contained"
+                                            onClick={() => {
+                                                const updated = values.projects.filter((_, i) => i !== index)
+                                                setFieldValue("projects", updated)
+                                            }}
+                                        >
+                                            Remove Project
+                                        </Button>
+                                    </Grid>
+                                )}
+                            </React.Fragment>
+                        ))}
 
-                        <Grid size={{ xs: 12 }}>
-                            <TextField {...fieldProps("project2Name", "Project Name")} />
-                        </Grid>
-
-                        <Grid size={{ xs: 12 }}>
-                            <TextField
-                                {...fieldProps("project2Desc", "Project Description")}
-                                multiline
-                                rows={3}
-                            />
-                        </Grid>
-
-                        <Grid size={{ xs: 12 }}>
-                            <TextField {...fieldProps("project2Tech", "Technologies Used (comma seperated)")} />
-                        </Grid>
+                        {values.projects.length < 3 && (
+                            <Grid size={{ xs: 12 }}>
+                                <Button
+                                    variant="contained"
+                                    onClick={() =>
+                                        setFieldValue("projects", [
+                                            ...values.projects,
+                                            { name: "", desc: "", tech: "" }
+                                        ])
+                                    }
+                                    sx={{ backgroundColor: "#05ab32" }}
+                                >
+                                    Add Project
+                                </Button>
+                            </Grid>
+                        )}
                     </Grid>
                 )
 
@@ -343,6 +626,16 @@ export default function BuilderClient() {
                     <Box>
                         <TextField
                             {...fieldProps("skills", "Skills")}
+                            onChange={(e) => {
+                                fieldProps("skills", "Skills").onChange(e);
+                                const newSkills = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                                const updatedRatings = Object.fromEntries(
+                                    Object.entries(values.skillRatings || {}).filter(([key]) =>
+                                        newSkills.includes(key)
+                                    )
+                                );
+                                setFieldValue('skillRatings', updatedRatings);
+                            }}
                             multiline
                             rows={3}
                         />
@@ -357,58 +650,196 @@ export default function BuilderClient() {
                                 />
                             ))}
                         </Box>
+                        <Typography
+                            sx={{
+                                fontWeight: 600,
+                                fontSize: "1.5rem",
+                                minWidth: { sm: "150px" },
+                                mt: 2,
+                                mb: 2
+                            }}>Rate yourself in each skill out of 10 (By default 0)
+                        </Typography>
+                        {formik.values.skills.split(',').map((eachSkill, index) => {
+                            const skill = eachSkill.trim();
+                            if (!skill) return null;
+
+                            return (
+                                <Box
+                                    key={index}
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: { xs: "column", sm: "row" },
+                                        alignItems: { xs: "flex-start", sm: "center" },
+                                        justifyContent: "space-between",
+                                        gap: 2,
+                                        p: 2,
+                                        border: "1px solid #e0e0e0",
+                                        borderRadius: 2,
+                                        m: 1.5,
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 600,
+                                            fontSize: "0.95rem",
+                                            minWidth: { sm: "150px" },
+                                        }}
+                                    >
+                                        {skill}
+                                    </Typography>
+
+                                    <TextField
+                                        placeholder="Rating out of 10"
+                                        size="small"
+                                        type="number"
+                                        fullWidth
+                                        sx={{
+                                            maxWidth: { sm: "300px" },
+                                            "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+                                                WebkitAppearance: "none",
+                                                margin: 0,
+                                            },
+                                        }}
+                                        name={`skillRatings.${skill}`}
+                                        value={values.skillRatings?.[skill] ?? ""}
+                                        onChange={(e) => {
+                                            const val = e.target.value === "" ? "" : Number(e.target.value);
+                                            setFieldValue("skillRatings", {
+                                                ...values.skillRatings,
+                                                [skill]: val
+                                            });
+                                        }}
+                                        onBlur={() => setFieldTouched("skillRatings", true)}
+                                        slotProps={{ htmlInput: { min: 1, max: 10 } }}
+                                        error={
+                                            Boolean(touched.skillRatings) &&
+                                            Boolean((errors.skillRatings as any)?.[skill])
+                                        }
+                                        helperText={
+                                            touched.skillRatings &&
+                                            (errors.skillRatings as any)?.[skill]
+                                        }
+                                        color="success"
+                                    />
+                                </Box>
+                            );
+                        })}
                     </Box>
                 )
 
             case 4:
                 return (
                     <Grid container spacing={3}>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                            <TextField {...fieldProps("jobTitle", "Job Title")} />
-                        </Grid>
+                        {(values.workExperience ?? []).map((exp, index) => (
+                            <React.Fragment key={index}>
+                                <Grid size={{ xs: 12 }}>
+                                    <Typography variant="h6">Work Experience {index + 1}</Typography>
+                                </Grid>
 
-                        <Grid size={{ xs: 12, md: 6 }}>
-                            <TextField {...fieldProps("companyName", "Company Name")} />
-                        </Grid>
+                                <Grid size={{ xs: 12, md: 6 }}>
+                                    <TextField {...fieldProps(`workExperience[${index}].jobTitle`, "Job Title")} />
+                                </Grid>
 
-                        <Grid size={{ xs: 12 }}>
-                            <TextField {...fieldProps("Location", "Location (e.g. Remote, New York)")} />
-                        </Grid>
+                                <Grid size={{ xs: 12, md: 6 }}>
+                                    <TextField {...fieldProps(`workExperience[${index}].companyName`, "Company Name")} />
+                                </Grid>
 
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <Grid size={{ xs: 12, md: 6 }}>
-                                <DatePicker
-                                    label="Start Date"
-                                    value={values.startDate ? dayjs(values.startDate) : null}
-                                    onChange={(newValue: dayjs.Dayjs | null) => setFieldValue("startDate", newValue ? newValue.toISOString() : "")}
-                                    slotProps={{
-                                        textField: {
-                                            fullWidth: true,
-                                            error: Boolean(touched.startDate && errors.startDate),
-                                            helperText: touched.startDate ? errors.startDate : ""
-                                        }
-                                    }}
-                                />
+                                <Grid size={{ xs: 12 }}>
+                                    <TextField {...fieldProps(`workExperience[${index}].Location`, "Location (e.g. Remote, New York)")} />
+                                </Grid>
+
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <Grid size={{ xs: 12, md: 6 }}>
+                                        <DatePicker
+                                            label="Start Date"
+                                            disableFuture
+                                            value={exp.startDate ? dayjs(exp.startDate) : null}
+                                            onChange={(newValue) => {
+                                                const value = newValue ? newValue.toDate() : null;
+
+                                                setFieldValue(`workExperience[${index}].startDate`, value);
+                                                setFieldTouched(`workExperience[${index}].startDate`, true);
+                                            }}
+                                            slotProps={{
+                                                textField: {
+                                                    fullWidth: true,
+                                                    error:
+                                                        getIn(touched, `workExperience[${index}].startDate`) &&
+                                                        Boolean(getIn(errors, `workExperience[${index}].startDate`)),
+                                                    helperText:
+                                                        getIn(touched, `workExperience[${index}].startDate`) &&
+                                                        getIn(errors, `workExperience[${index}].startDate`),
+                                                },
+                                            }}
+                                        />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, md: 6 }}>
+                                        <DatePicker
+                                            label="End Date"
+                                            disableFuture
+                                            value={exp.endDate ? dayjs(exp.endDate) : null}
+                                            onChange={(newValue) => {
+                                                const value = newValue ? newValue.toDate() : null;
+
+                                                setFieldValue(`workExperience[${index}].endDate`, value);
+                                                setFieldTouched(`workExperience[${index}].endDate`, true);
+                                            }}
+                                            slotProps={{
+                                                textField: {
+                                                    fullWidth: true,
+                                                    error:
+                                                        getIn(touched, `workExperience[${index}].endDate`) &&
+                                                        Boolean(getIn(errors, `workExperience[${index}].endDate`)),
+                                                    helperText:
+                                                        getIn(touched, `workExperience[${index}].endDate`) &&
+                                                        getIn(errors, `workExperience[${index}].endDate`),
+                                                },
+                                            }}
+                                        />
+                                    </Grid>
+                                </LocalizationProvider>
+
+                                <Grid size={{ xs: 12 }}>
+                                    <TextField
+                                        {...fieldProps(`workExperience[${index}].responsibilities`, "Responsibilities")}
+                                        multiline
+                                        rows={4}
+                                    />
+                                </Grid>
+
+                                {values.workExperience.length > 1 && (
+                                    <Grid size={{ xs: 12 }}>
+                                        <Button
+                                            color="error"
+                                            onClick={() => {
+                                                const updated = values.workExperience.filter((_, i) => i !== index)
+                                                setFieldValue("workExperience", updated)
+                                            }}
+                                            variant="contained"
+                                        >
+                                            Remove Experience
+                                        </Button>
+                                    </Grid>
+                                )}
+                            </React.Fragment>
+                        ))}
+
+                        {(values.workExperience ?? []).length < 3 && (
+                            <Grid size={{ xs: 12 }}>
+                                <Button
+                                    variant="contained"
+                                    onClick={() =>
+                                        setFieldValue("workExperience", [
+                                            ...(values.workExperience ?? []),
+                                            { jobTitle: "", companyName: "", Location: "", startDate: "", endDate: "", responsibilities: "" }
+                                        ])
+                                    }
+                                    sx={{ backgroundColor: "#05ab32" }}
+                                >
+                                    Add Experience
+                                </Button>
                             </Grid>
-                            <Grid size={{ xs: 12, md: 6 }}>
-                                <DatePicker
-                                    label="End Date"
-                                    value={values.endDate ? dayjs(values.endDate) : null}
-                                    onChange={(newValue: dayjs.Dayjs | null) => setFieldValue("endDate", newValue ? newValue.toISOString() : "")}
-                                    slotProps={{
-                                        textField: {
-                                            fullWidth: true,
-                                            error: Boolean(touched.endDate && errors.endDate),
-                                            helperText: touched.endDate ? errors.endDate : ""
-                                        }
-                                    }}
-                                />
-                            </Grid>
-                        </LocalizationProvider>
-
-                        <Grid size={{ xs: 12 }}>
-                            <TextField {...fieldProps("responsibilities", "Responsibilities")} multiline rows={4} />
-                        </Grid>
+                        )}
                     </Grid>
                 )
 
@@ -473,28 +904,40 @@ export default function BuilderClient() {
     };
 
     const handleDownloadAndSave = (values: ResumeValues) => {
-        const loginUserStr = localStorage.getItem("prime_cv_authuser")
-        const loginUser = loginUserStr ? JSON.parse(loginUserStr) : null
-        const userEmail = loginUser?.email || "user_not_authorised"
+        const loginUserStr = localStorage.getItem("prime_cv_authuser");
+        const loginUser = loginUserStr ? JSON.parse(loginUserStr) : null;
+        const userEmail = loginUser?.email || "user_not_authorised";
 
         if (!userEmail) {
-            alert("User not found. Kindly Logout and Login again")
-            return
+            alert("User not found. Kindly Logout and Login again");
+            return;
         }
-        const storageKey = `prime_cv_resumes_${userEmail}`
-        const existingResumes = JSON.parse(localStorage.getItem(storageKey) || "[]")
-        // eslint-disable-next-line react-hooks/purity
-        const timestamp = Date.now()
-        const dateString = new Date(timestamp).toISOString()
-        const newResume = {
+
+        const isEmptyObject = (obj: any) =>
+            !obj || Object.values(obj).every(val => !val || val === "");
+
+        const cleanedValues = {
             ...values,
+            workExperience: (values.workExperience || []).filter(exp => !isEmptyObject(exp)),
+            projects: (values.projects || []).filter(proj => !isEmptyObject(proj))
+        };
+
+        const storageKey = `prime_cv_resumes_${userEmail}`;
+        const existingResumes = JSON.parse(localStorage.getItem(storageKey) || "[]");
+
+        const timestamp = Date.now();
+        const dateString = new Date(timestamp).toISOString();
+
+        const newResume = {
+            ...cleanedValues,
             templatNumber: selectedTemplate,
-            resumeId: timestamp,
+            resumeId: String(timestamp),
             createdAt: dateString,
-        }
-        const updatedResumes = [...existingResumes, newResume]
-        localStorage.setItem(storageKey, JSON.stringify(updatedResumes))
-    }
+        };
+
+        const updatedResumes = [...existingResumes, newResume];
+        localStorage.setItem(storageKey, JSON.stringify(updatedResumes));
+    };
 
     return (
         <Box>
@@ -525,7 +968,7 @@ export default function BuilderClient() {
                     }}
                 />
             </Typography>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <Box sx={{ maxWidth: 900, mx: "auto", px: 2, py: 5 }}>
                     <Typography variant="h6" sx={{ fontWeight: "bold", mb: 4 }}>
                         {seeTemplates ? "Select Template To Download (Download now to view its full content)" : "Build Your Resume"}
@@ -550,7 +993,7 @@ export default function BuilderClient() {
                                     textAlign: "center",
                                     wordBreak: "break-word",
                                     lineHeight: 1.2,
-                                    color: "#05ab32",
+                                    color: "#9ca3af",
                                 },
 
                                 "& .MuiStepLabel-label.Mui-active": {
@@ -559,13 +1002,13 @@ export default function BuilderClient() {
                                 },
 
                                 "& .MuiStepLabel-label.Mui-completed": {
-                                    color: "#05ab32",
+                                    color: "#047857",
                                     fontWeight: 600,
                                 },
 
                                 "& .MuiStepIcon-root": {
                                     fontSize: { xs: "1.3rem", sm: "1.5rem" },
-                                    color: "#05ab32",
+                                    color: "#d1d5db",
                                 },
 
                                 "& .MuiStepIcon-root.Mui-active": {
@@ -573,17 +1016,30 @@ export default function BuilderClient() {
                                 },
 
                                 "& .MuiStepIcon-root.Mui-completed": {
-                                    color: "#05ab32",
+                                    color: "#047857",
                                 },
 
                                 "& .MuiStepConnector-line": {
-                                    borderColor: "#05ab32",
+                                    borderColor: "#d1d5db",
                                     borderTopWidth: 2,
+                                },
+
+                                "& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line": {
+                                    borderColor: "#047857",
+                                },
+
+                                "& .MuiStepConnector-root.Mui-active .MuiStepConnector-line": {
+                                    borderColor: "#05ab32",
                                 },
                             }}
                         >
                             {steps.map((step) => (
-                                <Step key={step.id} onClick={() => { setActiveStep(step.id) }} sx={{ cursor: "pointer" }}>
+                                <Step
+                                    key={step.id}
+                                    completed={activeStep > step.id}
+                                    onClick={() => { setActiveStep(step.id) }}
+                                    sx={{ cursor: "pointer" }}
+                                >
                                     <StepButton>{step.stepName}</StepButton>
                                 </Step>
                             ))}
@@ -614,7 +1070,7 @@ export default function BuilderClient() {
                                 >
                                     {/* Template One */}
                                     <Box sx={{
-                                        textAlign: "center", overflowX: "auto", mr: 5,
+                                        overflowX: "auto", mr: 5,
                                         mb: {
                                             xs: 3,
                                             lg: 0,
@@ -636,13 +1092,12 @@ export default function BuilderClient() {
                                         />
 
                                         <Box id="template1">
-                                            <TemplateOne values={formik.values} height={800} width="100%" />
+                                            <TemplateOne values={formik.values} height={850} width="100%" submit={seeTemplates} />
                                         </Box>
                                     </Box>
 
                                     {/* Template Two */}
                                     <Box sx={{
-                                        textAlign: "center",
                                         ml: {
                                             xs: 0,
                                             md: 5,
@@ -661,7 +1116,7 @@ export default function BuilderClient() {
                                         />
 
                                         <Box id="template2">
-                                            <TemplateTwo values={formik.values} height={800} width="100%" />
+                                            <TemplateTwo values={formik.values as TemplateTwoValues} height={850} width="100%" submit={seeTemplates} />
                                         </Box>
                                     </Box>
                                 </Box>
@@ -720,10 +1175,8 @@ export default function BuilderClient() {
                                                 <Button variant="contained" type="submit" sx={{ backgroundColor: "#05ab32" }}>
                                                     {isLastStep ? "Submit" : "Next"}
                                                 </Button>
-
                                             </Box>
                                         </CardContent>
-
                                     </Card>
 
                                 </form>
@@ -731,70 +1184,77 @@ export default function BuilderClient() {
                         </>
                     </Box>
                 </Box>
-                <Box
-                    sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        mt: 2,
-                        mb: 2,
-                        overflowX: "hidden",
-                        ml: {
-                            xs: 0,
-                            lg: -20
-                        },
-                        width: "40%"
-                    }}
-                >
-                    <Box sx={{ display: "flex" }}>
-                        {/* Template One */}
-                        <Box sx={{
-                            textAlign: "center", overflowX: "auto", mr: 5,
-                            mb: {
-                                xs: 3,
-                                lg: 0,
+                {!seeTemplates && (
+                    <Box
+                        sx={{
+                            display: {
+                                xs: "none",
+                                sm: "none",
+                                md: "none",
+                                lg: "flex"
                             },
-                            ml: {
-                                xs: 10,
-                                lg: 0
-                            }
-                        }}>
-                            <FormControlLabel
-                                control={
-                                    <Radio
-                                        checked={selectedTemplate === "template1"}
-                                        onChange={() => setSelectedTemplate("template1")}
-                                        color="success"
-                                    />
-                                }
-                                label="Template One"
-                            />
-                        </Box>
-
-                        {/* Template Two */}
-                        <Box sx={{
-                            textAlign: "center",
+                            flexDirection: "column",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mt: 2,
+                            mb: 2,
+                            overflowX: "hidden",
                             ml: {
                                 xs: 0,
-                                md: 5,
-                                lg: 5,
-                            }
-                        }}>
-                            <FormControlLabel
-                                control={
-                                    <Radio
-                                        checked={selectedTemplate === "template2"}
-                                        onChange={() => setSelectedTemplate("template2")}
-                                        color="success"
-                                    />
+                                lg: -20
+                            },
+                            width: "40%"
+                        }}
+                    >
+                        <Box sx={{ display: "flex" }}>
+                            {/* Template One */}
+                            <Box sx={{
+                                textAlign: "center", overflowX: "auto", mr: 5,
+                                mb: {
+                                    xs: 3,
+                                    lg: 0,
+                                },
+                                ml: {
+                                    xs: 10,
+                                    lg: 0
                                 }
-                                label="Template Two"
-                            />
+                            }}>
+                                <FormControlLabel
+                                    control={
+                                        <Radio
+                                            checked={selectedTemplate === "template1"}
+                                            onChange={() => setSelectedTemplate("template1")}
+                                            color="success"
+                                        />
+                                    }
+                                    label="Template One"
+                                />
+                            </Box>
+
+                            {/* Template Two */}
+                            <Box sx={{
+                                textAlign: "center",
+                                ml: {
+                                    xs: 0,
+                                    md: 5,
+                                    lg: 5,
+                                }
+                            }}>
+                                <FormControlLabel
+                                    control={
+                                        <Radio
+                                            checked={selectedTemplate === "template2"}
+                                            onChange={() => setSelectedTemplate("template2")}
+                                            color="success"
+                                        />
+                                    }
+                                    label="Template Two"
+                                />
+                            </Box>
                         </Box>
+                        {selectedTemplate === "template1" ? <TemplateOne values={formik.values as TemplateOneValues} height={850} width="80%" submit={seeTemplates} /> : <TemplateTwo values={formik.values as TemplateTwoValues} height={850} width="80%" submit={seeTemplates} />}
                     </Box>
-                    {selectedTemplate === "template1" ? <TemplateOne values={formik.values} height={850} width="80%" /> : <TemplateTwo values={formik.values} height={850} width="80%" />}
-                </Box>
+                )}
             </Box>
         </Box >
     )
