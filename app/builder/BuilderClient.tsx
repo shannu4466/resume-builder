@@ -301,14 +301,14 @@ const validationSchemas = [
                 startDate: Yup.date()
                     .nullable()
                     .transform((value, originalValue) =>
-                        originalValue === "" ? null : value 
+                        originalValue === "" ? null : value
                     )
                     .max(new Date(), "Start date cannot be in the future"),
 
                 endDate: Yup.date()
                     .nullable()
                     .transform((value, originalValue) =>
-                        originalValue === "" ? null : value 
+                        originalValue === "" ? null : value
                     )
                     .test(
                         "is-after-start",
@@ -415,21 +415,11 @@ export default function BuilderClient() {
             fullWidth: true,
             name,
             label,
-            value: name.includes('[')
-                ? name.split(/[\[\].]+/).filter(Boolean).reduce((obj: any, key) => obj?.[key], values)
-                : (values as any)[name],
+            value: getIn(values, name) ?? "",
             onChange: handleChange,
             onBlur: handleBlur,
-            error: Boolean(
-                name.includes('[')
-                    ? name.split(/[\[\].]+/).filter(Boolean).reduce((obj: any, key) => obj?.[key], touched) &&
-                    name.split(/[\[\].]+/).filter(Boolean).reduce((obj: any, key) => obj?.[key], errors)
-                    : (touched as any)[name] && (errors as any)[name]
-            ),
-            helperText: (name.includes('[')
-                ? name.split(/[\[\].]+/).filter(Boolean).reduce((obj: any, key) => obj?.[key], touched) &&
-                name.split(/[\[\].]+/).filter(Boolean).reduce((obj: any, key) => obj?.[key], errors)
-                : (touched as any)[name] ? (errors as any)[name] : "") as string,
+            error: Boolean(getIn(touched, name) && getIn(errors, name)),
+            helperText: getIn(touched, name) ? (getIn(errors, name) ?? "") : "",
             color: "success" as const
         })
 

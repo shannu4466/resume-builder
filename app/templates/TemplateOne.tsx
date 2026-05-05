@@ -445,7 +445,7 @@ export default function TemplateOne({ values, height, width, submit }: Props) {
                                         }}
                                     />
                                     <Typography sx={{ fontSize: 12 * scale, color: "#475569", lineHeight: 1.8 }}>
-                                        {values.achievement || "Any achivements in your life"}
+                                        {values.achievement || "Any achievements in your life"}
                                     </Typography>
                                 </Stack>
                             </Box>

@@ -454,7 +454,7 @@ export default function TemplateTwo({ values, height, width, submit }: Props) {
 
                     <Divider sx={{ mx: 2.5, my: 1.8, borderColor: "#6ee7b7" }} />
 
-                    {((values.certificateName !== "" || values.certificateDesc !== "") || !submit && !isHistoryTab) && (
+                    {((values.certificateName || values.certificateDesc) || (!submit && !isHistoryTab)) && (
                         <Box sx={{ px: 2.5, pb: 2 }}>
                             <SidebarSection title="CERTIFICATE" emerald={EMERALD} scale={scale} />
                             <Box
